@@ -942,3 +942,4 @@ C:\Users\ramge\OneDrive\Documents\Proyectos\pokemon-api\tests\PokemonApi.Integra
 C:\Users\ramge\OneDrive\Documents\Proyectos\pokemon-api\tests\PokemonApi.IntegrationTests\bin\DocsValidation\PokemonApi.Domain.xml
 C:\Users\ramge\OneDrive\Documents\Proyectos\pokemon-api\tests\PokemonApi.IntegrationTests\bin\DocsValidation\PokemonApi.Infrastructure.pdb
 C:\Users\ramge\OneDrive\Documents\Proyectos\pokemon-api\tests\PokemonApi.IntegrationTests\bin\DocsValidation\PokemonApi.Infrastructure.xml
+C:\Users\ramge\OneDrive\Documents\Proyectos\pokemon-api\tests\PokemonApi.IntegrationTests\obj\Debug\net9.0\PokemonApi.IntegrationTests.sourcelink.json

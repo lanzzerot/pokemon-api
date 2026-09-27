@@ -49,9 +49,8 @@ public static class DocumentationEndpoints
     {
         ArgumentNullException.ThrowIfNull(app);
 
-        // La pagina se sirve en /docs y los assets en /docs/{recurso}, sin barra
-        // final, que es lo que hace que las rutas relativas de index.html
-        // ("docs.css") resuelvan contra /docs/.
+        // La pagina se sirve en /docs y los recursos en /docs/{recurso}. El HTML
+        // usa rutas absolutas para que ambos formatos de la URL funcionen.
         var group = app.MapGroup(RoutePrefix)
             .ExcludeFromDescription()
             .AddEndpointFilter(CacheForAShortTimeAsync);

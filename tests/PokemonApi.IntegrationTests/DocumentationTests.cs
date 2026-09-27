@@ -85,10 +85,11 @@ public sealed class DocumentationTests(PokemonApiFactory factory)
         var html = await Client.GetStringAsync("/docs");
 
         // Assert
-        html.ShouldContain("href=\"docs.css\"");
-        html.ShouldContain("src=\"docs.js\"");
-        html.ShouldContain("href=\"pokemon-api-logo.svg\"");
-        html.ShouldContain("src=\"pokemon-api-logo.svg\"");
+        html.ShouldContain("href=\"/docs/docs.css\"");
+        html.ShouldContain("src=\"/docs/docs.js\"");
+        html.ShouldContain("href=\"/docs/pokemon-api-logo.svg\"");
+        html.ShouldContain("src=\"/docs/pokemon-api-logo.svg\"");
+        html.ShouldContain("href=\"/openapi.json\"");
 
         var script = await Client.GetStringAsync("/docs/docs.js");
         script.ShouldContain("/openapi.json");

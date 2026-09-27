@@ -29,3 +29,4 @@ C:\Users\ramge\OneDrive\Documents\Proyectos\pokemon-api\src\PokemonApi.Infrastru
 C:\Users\ramge\OneDrive\Documents\Proyectos\pokemon-api\src\PokemonApi.Infrastructure\bin\DocsValidation\PokemonApi.Application.xml
 C:\Users\ramge\OneDrive\Documents\Proyectos\pokemon-api\src\PokemonApi.Infrastructure\bin\DocsValidation\PokemonApi.Domain.pdb
 C:\Users\ramge\OneDrive\Documents\Proyectos\pokemon-api\src\PokemonApi.Infrastructure\bin\DocsValidation\PokemonApi.Domain.xml
+C:\Users\ramge\OneDrive\Documents\Proyectos\pokemon-api\src\PokemonApi.Infrastructure\obj\Debug\net9.0\PokemonApi.Infrastructure.sourcelink.json
