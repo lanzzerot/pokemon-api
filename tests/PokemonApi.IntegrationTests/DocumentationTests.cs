@@ -52,6 +52,18 @@ public sealed class DocumentationTests(PokemonApiFactory factory)
     }
 
     [Fact]
+    public async Task The_home_route_serves_the_documentation_page()
+    {
+        // Act
+        var response = await Client.GetAsync("/");
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        response.Content.Headers.ContentType?.MediaType.ShouldBe("text/html");
+        (await response.Content.ReadAsStringAsync()).ShouldContain("El Pokédex, como API");
+    }
+
+    [Fact]
     public async Task The_page_explains_the_api_without_swagger()
     {
         // Act

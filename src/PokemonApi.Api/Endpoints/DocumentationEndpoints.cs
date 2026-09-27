@@ -49,6 +49,11 @@ public static class DocumentationEndpoints
     {
         ArgumentNullException.ThrowIfNull(app);
 
+        app.MapGet("/", () => Serve("index.html"))
+            .ExcludeFromDescription()
+            .AddEndpointFilter(CacheForAShortTimeAsync)
+            .WithName("GetHomeDocumentation");
+
         // La pagina se sirve en /docs y los recursos en /docs/{recurso}. El HTML
         // usa rutas absolutas para que ambos formatos de la URL funcionen.
         var group = app.MapGroup(RoutePrefix)
