@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("PokemonApi.Infrastructure")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c8f3091ae4dba68eb9e7e52156b2a1edd68e33d9")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+dfe5d2b5abf2ea07690dd2ab76e09658e82d6344")]
 [assembly: System.Reflection.AssemblyProductAttribute("PokemonApi.Infrastructure")]
 [assembly: System.Reflection.AssemblyTitleAttribute("PokemonApi.Infrastructure")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

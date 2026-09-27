@@ -12,5 +12,5 @@ FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
 WORKDIR /app
 COPY --from=build /app/publish .
 
-EXPOSE 8080
-ENTRYPOINT ["sh", "-c", "dotnet PokemonApi.Api.dll --urls http://0.0.0.0:${PORT:-8080}"]
+EXPOSE 10000
+ENTRYPOINT ["sh", "-c", "dotnet PokemonApi.Api.dll --urls http://0.0.0.0:${PORT:-10000}"]
