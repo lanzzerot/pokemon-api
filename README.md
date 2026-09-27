@@ -1,6 +1,8 @@
 # Pokémon API
 
-![Logo Poké Ball de Pokémon API](assets/pokemon-api-logo.svg)
+<!-- markdownlint-disable MD033 -->
+<p align="center"><img src="assets/pokemon-api-logo.svg" alt="Logo Poké Ball de Pokémon API" width="56"></p>
+<!-- markdownlint-enable MD033 -->
 
 [![.NET 9](https://img.shields.io/badge/.NET-9.0-512BD4?logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/) [![OpenAPI 3.1](https://img.shields.io/badge/OpenAPI-3.1-6BA6FF)](src/PokemonApi.Api/Docs/index.html) [![API de solo lectura](https://img.shields.io/badge/API-solo%20lectura-2B8067)](#endpoints) [![Sin llamadas de red en runtime](https://img.shields.io/badge/Runtime-sin%20red-E04B59)](#dataset) [![Dataset BSD-3-Clause](https://img.shields.io/badge/Dataset-BSD--3--Clause-566C7D)](https://github.com/PokeAPI/pokeapi)
 
