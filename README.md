@@ -19,6 +19,7 @@ imágenes; devuelve las URL de los sprites incluidas en los datos.
   - [Vista previa](#vista-previa)
   - [Requisitos](#requisitos)
   - [Inicio rápido](#inicio-rápido)
+  - [Despliegue](#despliegue)
   - [Documentación](#documentación)
   - [Endpoints](#endpoints)
   - [Filtros, orden y paginación](#filtros-orden-y-paginación)
@@ -66,6 +67,33 @@ PowerShell.
 Si la compilación informa que no puede copiar una DLL porque está en uso, detén
 la instancia anterior de la API con `Ctrl+C` en el terminal donde se inició y
 vuelve a ejecutar el comando.
+
+## Despliegue
+
+El repositorio incluye un `Dockerfile` multi-stage para .NET 9. Usa el puerto
+`PORT` proporcionado por la plataforma y escucha en `0.0.0.0`, por lo que sirve
+en Render y Railway sin configurar un puerto fijo.
+
+1. Sube el repositorio a GitHub.
+2. En Render, crea un **New > Web Service** y conecta el repositorio.
+3. Deja la raíz del proyecto como `.`; selecciona **Docker** y el archivo
+  `Dockerfile` en la raíz.
+4. Elige el plan **Free**, define el health check como `/health` y crea el
+  servicio.
+5. Al terminar el despliegue, abre `https://<nombre>.onrender.com/docs/`.
+
+Render es la opción más directa si quieres empezar sin pagar. En su nivel gratis
+el servicio se suspende tras 15 minutos sin tráfico y la primera petición puede
+tardar cerca de un minuto mientras vuelve a arrancar. El almacenamiento local
+es efímero, pero esta API no necesita persistencia: el dataset está incrustado
+en el ensamblado.
+
+Para Railway, crea un proyecto desde GitHub; detectará el `Dockerfile` en la
+raíz. En el servicio, abre **Settings > Networking > Public Networking** y
+selecciona **Generate Domain**. El plan Free ofrece actualmente $1 mensual de
+crédito de uso; la prueba inicial ofrece $5 durante 30 días. Revisa el consumo
+en [precios de Railway](https://railway.com/pricing), porque el crédito puede
+no cubrir un servicio activo todo el mes.
 
 ## Documentación
 

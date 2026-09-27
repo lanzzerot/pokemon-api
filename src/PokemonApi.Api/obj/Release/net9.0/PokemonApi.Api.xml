@@ -1,0 +1,587 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>PokemonApi.Api</name>
+    </assembly>
+    <members>
+        <member name="T:PokemonApi.Api.Endpoints.CatalogEndpoints">
+            <summary>
+            Endpoints de los catalogos de referencia.
+            </summary>
+            <remarks>
+            Son endpoints separados y no un unico <c>/metadata</c> porque cada catalogo se
+            consume de forma independiente: un cliente que solo necesita el mapa de tipos
+            no deberia descargar 367 habilidades para obtener el resto.
+            </remarks>
+        </member>
+        <member name="F:PokemonApi.Api.Endpoints.CatalogEndpoints.RoutePrefix">
+            <summary>Prefijo comun de los endpoints de catalogo.</summary>
+        </member>
+        <member name="M:PokemonApi.Api.Endpoints.CatalogEndpoints.MapCatalogEndpoints(Microsoft.AspNetCore.Builder.WebApplication)">
+            <summary>Registra los endpoints de catalogo.</summary>
+            <param name="app">Aplicacion web.</param>
+        </member>
+        <member name="T:PokemonApi.Api.Endpoints.DocumentationEndpoints">
+            <summary>
+            Endpoints de la documentacion publica.
+            </summary>
+            <remarks>
+            La web se sirve desde los recursos incrustados del propio ensamblado, igual
+            que el dataset: no hay carpeta que desplegar, ni CDN que pueda caerse, ni
+            archivos que se queden atras respecto al binario que se esta ejecutando.
+            <para>
+            El <c>Content-Type</c> se declara de forma explicita porque un recurso
+            incrustado no deduce la extension, y el navegador rechazaria un
+            <c>text/plain</c> cargado desde un <c>&lt;script&gt;</c>. Los assets se
+            cachean cinco minutos: son pequenos y solo cambian al desplegar.
+            </para>
+            <para>
+            No se aplica politica de limitacion. La pagina pide un recurso y el documento
+            OpenAPI uno mas, mientras que los limites de la API existen para proteger el
+            catalogo de un cliente que lo recorre entero.
+            </para>
+            </remarks>
+        </member>
+        <member name="F:PokemonApi.Api.Endpoints.DocumentationEndpoints.RoutePrefix">
+            <summary>Ruta de la documentacion.</summary>
+        </member>
+        <member name="F:PokemonApi.Api.Endpoints.DocumentationEndpoints.ContentTypes">
+            <summary>Tipos MIME de los recursos, indexados por recurso.</summary>
+        </member>
+        <member name="F:PokemonApi.Api.Endpoints.DocumentationEndpoints.Assets">
+            <summary>
+            Los recursos se leen una sola vez del ensamblado y se sirven de
+            memoria, que ademas es donde ya estan en el caso normal.
+            </summary>
+        </member>
+        <member name="M:PokemonApi.Api.Endpoints.DocumentationEndpoints.MapDocumentationEndpoints(Microsoft.AspNetCore.Builder.WebApplication)">
+            <summary>Registra los endpoints de documentacion.</summary>
+            <param name="app">Aplicacion web.</param>
+        </member>
+        <member name="M:PokemonApi.Api.Endpoints.DocumentationEndpoints.Serve(System.String)">
+            <summary>Devuelve un recurso de la documentacion.</summary>
+            <param name="name">Nombre del recurso incrustado.</param>
+            <returns>El recurso con su tipo MIME.</returns>
+            <exception cref="T:System.InvalidOperationException">El recurso no esta incrustado.</exception>
+        </member>
+        <member name="M:PokemonApi.Api.Endpoints.DocumentationEndpoints.LoadAssets">
+            <summary>Carga los recursos incrustados de la documentacion.</summary>
+            <returns>Contenido de cada recurso, indexado por nombre.</returns>
+        </member>
+        <member name="M:PokemonApi.Api.Endpoints.DocumentationEndpoints.CacheForAShortTimeAsync(Microsoft.AspNetCore.Http.EndpointFilterInvocationContext,Microsoft.AspNetCore.Http.EndpointFilterDelegate)">
+            <summary>
+            Anade una cache corta a la respuesta. Se ejecuta antes de que el
+            resultado escriba la respuesta, que es cuando todavia se pueden tocar las
+            cabeceras.
+            </summary>
+            <param name="context">Contexto del filtro.</param>
+            <param name="next">Siguiente filtro de la cadena.</param>
+            <returns>El resultado del endpoint.</returns>
+        </member>
+        <member name="T:PokemonApi.Api.Endpoints.PokemonEndpoints">
+            <summary>
+            Endpoints de consulta de Pokemon.
+            </summary>
+            <remarks>
+            Cada endpoint se limita a traducir HTTP a un caso de uso y el resultado a una
+            respuesta. Ninguno contiene reglas de negocio: si un filtro necesita saber si
+            "fire" es un tipo valido, esa pregunta la responde el caso de uso, no el
+            endpoint.
+            </remarks>
+        </member>
+        <member name="F:PokemonApi.Api.Endpoints.PokemonEndpoints.RoutePrefix">
+            <summary>Prefijo comun de todos los endpoints de Pokemon.</summary>
+        </member>
+        <member name="M:PokemonApi.Api.Endpoints.PokemonEndpoints.MapPokemonEndpoints(Microsoft.AspNetCore.Builder.WebApplication)">
+            <summary>Registra los endpoints de Pokemon.</summary>
+            <param name="app">Aplicacion web.</param>
+        </member>
+        <member name="T:PokemonApi.Api.Infrastructure.ApiLog">
+            <summary>
+            Mensajes de registro de la capa de presentacion.
+            </summary>
+            <remarks>
+            Se declaran con <see cref="T:Microsoft.Extensions.Logging.LoggerMessageAttribute"/> porque el generador de
+            origen los compila a delegados estaticos: la plantilla se resuelve al
+            compilar y los parametros conservan su tipo.
+            </remarks>
+        </member>
+        <member name="M:PokemonApi.Api.Infrastructure.ApiLog.RequestValidationFailed(Microsoft.Extensions.Logging.ILogger,System.Int32,System.String)">
+            <summary>Una peticion se ha rechazado por no cumplir la validacion.</summary>
+            <param name="logger">Registrador.</param>
+            <param name="failureCount">Numero de campos con fallos.</param>
+            <param name="failures">Detalle de los fallos, indexado por campo.</param>
+        </member>
+        <member name="M:PokemonApi.Api.Infrastructure.ApiLog.UnhandledException(Microsoft.Extensions.Logging.ILogger,System.Exception,System.String,System.String,System.Double)">
+            <summary>Se ha producido una excepcion no controlada.</summary>
+            <param name="logger">Registrador.</param>
+            <param name="exception">Excepcion capturada.</param>
+            <param name="method">Metodo HTTP de la peticion.</param>
+            <param name="path">Ruta de la peticion.</param>
+            <param name="elapsedMilliseconds">Duracion en milisegundos.</param>
+        </member>
+        <member name="T:PokemonApi.Api.Infrastructure.ApiOpenApiExtensions">
+            <summary>
+            Configura el documento OpenAPI que la API publica en <c>/openapi.json</c>.
+            </summary>
+            <remarks>
+            La documentacion ejecutable se genera con el generador incluido en .NET, sin
+            Swashbuckle ni ninguna otra dependencia. A cambio, las dos piezas que el
+            generador no trae (los comentarios XML y los valores admitidos de los
+            parametros de conjunto cerrado) se anaden aqui como transformadores, de modo
+            que el documento sigue siendo tan explicito como el que se publicaba antes.
+            </remarks>
+        </member>
+        <member name="M:PokemonApi.Api.Infrastructure.ApiOpenApiExtensions.AddApiOpenApi(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            Registra el generador del documento y sus transformadores.
+            </summary>
+            <param name="services">Coleccion de servicios.</param>
+            <returns>La misma coleccion, para permitir el encadenamiento.</returns>
+        </member>
+        <member name="T:PokemonApi.Api.Infrastructure.ClosedWorldParameterTransformer">
+            <summary>
+            Anota con los valores admitidos los parametros de consulta que se reciben
+            como texto pero representan un conjunto cerrado.
+            </summary>
+            <remarks>
+            Los endpoints aceptan <c>?rarity=legendary</c> en lugar de
+            <c>?rarity=Legendary</c> porque el enlace automatico de los
+            <see langword="enum"/> del framework solo reconoce el nombre del miembro con
+            mayusculas y minusculas exactas. A cambio de esa comodidad, estos parametros
+            se declaran como <see cref="T:System.String"/> y se interpretan en la capa de
+            aplicacion, que devuelve ademas un error que enumera los valores validos.
+            <para>
+            Este transformador recupera en el documento la informacion que se perderia:
+            sin el, la referencia mostraria un <c>string</c> libre y el cliente tendria
+            que leer la descripcion del endpoint para descubrir las opciones.
+            </para>
+            </remarks>
+        </member>
+        <member name="M:PokemonApi.Api.Infrastructure.ClosedWorldParameterTransformer.TransformAsync(Microsoft.OpenApi.Models.OpenApiOperation,Microsoft.AspNetCore.OpenApi.OpenApiOperationTransformerContext,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:PokemonApi.Api.Infrastructure.ClosedWorldParameterTransformer.AllowedValues(System.String,System.Type)">
+            <summary>
+            Valores que se documentan para un parametro: los del enumerado mas las
+            abreviaturas que el endpoint acepta ademas.
+            </summary>
+            <param name="parameterName">Nombre del parametro de consulta.</param>
+            <param name="enumType">Enumerado que representa.</param>
+            <returns>Los valores admitidos, sin repetir.</returns>
+        </member>
+        <member name="T:PokemonApi.Api.Infrastructure.DataSetHealthCheck">
+            <summary>
+            Comprueba que el catalogo esta materializado y es coherente.
+            </summary>
+            <remarks>
+            El dataset se carga al arrancar, asi que para que este check devuelva
+            <see cref="M:Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Unhealthy(System.String,System.Exception,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})"/> habria que haber corrupto el proceso
+            despues de arrancar. Su valor real es el diagnostico: distingue "no hay datos"
+            de "los hay pero el endpoint no responde", que es lo que se suele buscar al
+            integrar un balanceador.
+            </remarks>
+        </member>
+        <member name="M:PokemonApi.Api.Infrastructure.DataSetHealthCheck.#ctor(PokemonApi.Infrastructure.Data.PokemonDataSet)">
+            <summary>
+            Comprueba que el catalogo esta materializado y es coherente.
+            </summary>
+            <remarks>
+            El dataset se carga al arrancar, asi que para que este check devuelva
+            <see cref="M:Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Unhealthy(System.String,System.Exception,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})"/> habria que haber corrupto el proceso
+            despues de arrancar. Su valor real es el diagnostico: distingue "no hay datos"
+            de "los hay pero el endpoint no responde", que es lo que se suele buscar al
+            integrar un balanceador.
+            </remarks>
+        </member>
+        <member name="M:PokemonApi.Api.Infrastructure.DataSetHealthCheck.CheckHealthAsync(Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckContext,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:PokemonApi.Api.Infrastructure.DuplicateSchemaMerger">
+            <summary>
+            Fusiona los esquemas duplicados que el generador crea para un mismo tipo.
+            </summary>
+            <remarks>
+            Los registros con constructor posicional producen un esquema por cada
+            parametro: <c>PokemonDetailResponse</c> declara <c>Height</c> y <c>Weight</c>
+            del tipo <c>MeasureResponse</c>, y el documento acababa publicando
+            <c>MeasureResponse</c> y <c>MeasureResponse2</c> con la misma forma pero
+            distintas descripciones.
+            <para>
+            Dos esquemas con la misma forma son el mismo tipo, asi que se conserva el
+            primero y se reescriben las referencias del resto. La descripcion del
+            esquema se ignora al comparar porque es justo lo que los distingue, y no
+            dice nada del tipo: lo que explica la altura y el peso es la descripcion de
+            cada propiedad, que no se toca.
+            </para>
+            </remarks>
+        </member>
+        <member name="M:PokemonApi.Api.Infrastructure.DuplicateSchemaMerger.TransformAsync(Microsoft.OpenApi.Models.OpenApiDocument,Microsoft.AspNetCore.OpenApi.OpenApiDocumentTransformerContext,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:PokemonApi.Api.Infrastructure.DuplicateSchemaMerger.MergeDuplicates(Microsoft.OpenApi.Models.OpenApiDocument)">
+            <summary>
+            Calcula a donde se redirige cada esquema duplicado y elimina el original
+            de la lista de componentes.
+            </summary>
+            <param name="document">Documento a compactar.</param>
+            <returns>Los nombres duplicados y el nombre que los sustituye.</returns>
+        </member>
+        <member name="M:PokemonApi.Api.Infrastructure.DuplicateSchemaMerger.Shape(Microsoft.OpenApi.Models.OpenApiSchema)">
+            <summary>Huella de un esquema, sin su descripcion.</summary>
+            <param name="schema">Esquema a comparar.</param>
+            <returns>Una cadena igual para dos esquemas de la misma forma.</returns>
+        </member>
+        <member name="T:PokemonApi.Api.Infrastructure.MalformedRequestExceptionHandler">
+            <summary>
+            Convierte un fallo de enlace de parametros en un <c>ProblemDetails</c> 400.
+            </summary>
+            <remarks>
+            Los endpoints declaran sus parametros con tipos reales (<c>int</c>,
+            <c>PokemonSortField</c>...) para que OpenAPI los documente y el contrato quede
+            tipado. Cuando el cliente envia un valor que no se puede enlazar, el framework
+            lanza <see cref="T:Microsoft.AspNetCore.Http.BadHttpRequestException"/> antes de entrar al endpoint; sin
+            este manejador esa excepcion caeria en el manejador generico y un simple error
+            de tecleo se responderia con un 500.
+            <para>
+            El mensaje del framework tiene la forma
+            <c>Failed to bind parameter 'System.Int32 page' from "abc".</c>; de ahi se extrae el
+            nombre del parametro para devolver el detalle en el mismo formato que el resto
+            de errores de validacion. El nombre del tipo precede al del parametro y las
+            comillas con las que el framework delimita cada parte han cambiado entre
+            versiones, asi que la expresion regular los cubre sin fija; si el formato
+            cambiara, el manejador degrada a un mensaje generico en lugar de fallar.
+            </para>
+            </remarks>
+        </member>
+        <member name="M:PokemonApi.Api.Infrastructure.MalformedRequestExceptionHandler.TryHandleAsync(Microsoft.AspNetCore.Http.HttpContext,System.Exception,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:PokemonApi.Api.Infrastructure.MalformedRequestExceptionHandler.BindingFailurePattern">
+            <remarks>
+            Pattern:<br/>
+            <code>Failed to bind parameter ['"](?:[^'"]*?\\s)?(?&lt;name&gt;[^'"\\s]+)['"] from "(?&lt;value&gt;[^"]*)"</code><br/>
+            Explanation:<br/>
+            <code>
+            ○ Match the string "Failed to bind parameter ".<br/>
+            ○ Match a character in the set ["'].<br/>
+            ○ Optional (greedy).<br/>
+                ○ Match a character in the set [^"'] lazily any number of times.<br/>
+                ○ Match a whitespace character.<br/>
+            ○ "name" capture group.<br/>
+                ○ Match a character in the set [^"'\s] greedily at least once.<br/>
+            ○ Match a character in the set ["'].<br/>
+            ○ Match the string " from \"".<br/>
+            ○ "value" capture group.<br/>
+                ○ Match a character other than '"' atomically any number of times.<br/>
+            ○ Match '"'.<br/>
+            </code>
+            </remarks>
+        </member>
+        <member name="T:PokemonApi.Api.Infrastructure.ProblemFactory">
+            <summary>
+            Traduce los errores del dominio a respuestas <c>ProblemDetails</c>.
+            </summary>
+            <remarks>
+            <para>
+            Es el unico punto donde se decide que codigo HTTP corresponde a cada fallo de
+            negocio. Concentrarlo aqui evita que cada endpoint invente su propio
+            mapeo y que dos endpoints devuelvan 500 ante el mismo <see cref="T:PokemonApi.Domain.Common.Error"/>.
+            </para>
+            <para>
+            Cada respuesta incluye un <c>code</c> estable y legible por maquina
+            (<c>pokemon.not_found</c>) y el <c>traceId</c> de la peticion, para que el
+            cliente pueda distinguir dos fallos distintos que compartan mensaje.
+            </para>
+            </remarks>
+        </member>
+        <member name="F:PokemonApi.Api.Infrastructure.ProblemFactory.ProblemTypePrefix">
+            <summary>Prefijo de los tipos de problema, en forma de URN.</summary>
+        </member>
+        <member name="M:PokemonApi.Api.Infrastructure.ProblemFactory.TypeFor(System.String)">
+            <summary>
+            Construye el valor de <c>type</c> de un <c>ProblemDetails</c>.
+            </summary>
+            <remarks>
+            RFC 7807 solo pide que <c>type</c> identifique de forma estable el tipo de
+            problema, y un URN cumple sin obligar a publicar una pagina de
+            documentacion que este proyecto no tiene. Se deriva del mismo
+            <c>code</c> que ya viaja en el cuerpo, de modo que <c>type</c> y
+            <c>code</c> no puedan contradecirse.
+            </remarks>
+            <param name="code">Codigo estable del error.</param>
+            <returns>El URN que identifica ese tipo de problema.</returns>
+        </member>
+        <member name="F:PokemonApi.Api.Infrastructure.ProblemFactory.ProblemContentType">
+            <summary>
+            Tipo de medio que RFC 7807 reserva para <c>ProblemDetails</c>.
+            </summary>
+            <remarks>
+            No es cosmetico: un cliente que decide como tratar un error mirando el
+            <c>Content-Type</c> no puede reconocer el problema si la respuesta llega
+            como <c>application/json</c>.
+            </remarks>
+        </member>
+        <member name="M:PokemonApi.Api.Infrastructure.ProblemFactory.FromError(PokemonApi.Domain.Common.Error,Microsoft.AspNetCore.Http.HttpContext)">
+            <summary>Convierte un resultado fallido en una respuesta HTTP.</summary>
+            <param name="error">Error de dominio.</param>
+            <param name="httpContext">
+            Contexto de la peticion, del que se toma el identificador de seguimiento.
+            Si se omite, la respuesta se emite sin <c>traceId</c>.
+            </param>
+            <returns>Un <see cref="T:Microsoft.AspNetCore.Http.IResult"/> con el codigo y el cuerpo adecuados.</returns>
+        </member>
+        <member name="M:PokemonApi.Api.Infrastructure.ProblemFactory.FromResult``1(PokemonApi.Domain.Common.Result{``0},Microsoft.AspNetCore.Http.HttpContext)">
+            <summary>
+            Convierte un resultado con valor en una respuesta HTTP, o en el
+            <c>ProblemDetails</c> que corresponda si fallo.
+            </summary>
+            <typeparam name="TValue">Tipo del valor.</typeparam>
+            <param name="result">Resultado del caso de uso.</param>
+            <param name="httpContext">Contexto de la peticion, para el identificador de seguimiento.</param>
+            <returns>La respuesta HTTP.</returns>
+        </member>
+        <member name="M:PokemonApi.Api.Infrastructure.ProblemFactory.WriteRateLimitedAsync(Microsoft.AspNetCore.Http.HttpContext,System.TimeSpan,System.Threading.CancellationToken)">
+            <summary>
+            Escribe la respuesta de limite de peticiones excedido.
+            </summary>
+            <param name="httpContext">Contexto de la peticion rechazada.</param>
+            <param name="retryAfter">Tiempo restante hasta el reinicio de la ventana.</param>
+            <param name="cancellationToken">Token de cancelacion.</param>
+            <returns>Tarea que representa la escritura de la respuesta.</returns>
+        </member>
+        <member name="T:PokemonApi.Api.Infrastructure.RateLimitPolicies">
+            <summary>
+            Nombres de las politicas de limitacion de peticiones.
+            </summary>
+        </member>
+        <member name="F:PokemonApi.Api.Infrastructure.RateLimitPolicies.Default">
+            <summary>Limite por defecto para el resto de endpoints.</summary>
+        </member>
+        <member name="F:PokemonApi.Api.Infrastructure.RateLimitPolicies.Catalog">
+            <summary>Limite mas alto para los catalogos, que son baratos y estables.</summary>
+        </member>
+        <member name="F:PokemonApi.Api.Infrastructure.RateLimitPolicies.Window">
+            <summary>
+            Duracion de la ventana de limitacion.
+            </summary>
+            <remarks>
+            Se declara aqui y no en cada politica porque es tambien el valor que se
+            anuncia en la cabecera <c>Retry-After</c> al rechazar una peticion. Que
+            ambos coincidan evita anunciar un tiempo que no es real.
+            </remarks>
+        </member>
+        <member name="F:PokemonApi.Api.Infrastructure.RateLimitPolicies.DefaultPermitLimit">
+            <summary>Peticiones por ventana en la politica por defecto.</summary>
+        </member>
+        <member name="F:PokemonApi.Api.Infrastructure.RateLimitPolicies.CatalogPermitLimit">
+            <summary>Peticiones por ventana en la politica de catalogos.</summary>
+        </member>
+        <member name="T:PokemonApi.Api.Infrastructure.UnexpectedExceptionHandler">
+            <summary>
+            Ultimo recurso ante una excepcion no controlada.
+            </summary>
+            <remarks>
+            Se registra como manejador para que la respuesta sea siempre un
+            <c>ProblemDetails</c> con la misma forma que el resto de errores, en lugar
+            del volcado de pila o la pagina en blanco que produce el host por defecto.
+            El detalle se registra en el log y no se devuelve: la respuesta solo lleva el
+            <c>traceId</c> que permite encontrarlo.
+            </remarks>
+            <param name="logger">Registrador de la aplicacion.</param>
+        </member>
+        <member name="M:PokemonApi.Api.Infrastructure.UnexpectedExceptionHandler.#ctor(Microsoft.Extensions.Logging.ILogger{PokemonApi.Api.Infrastructure.UnexpectedExceptionHandler})">
+            <summary>
+            Ultimo recurso ante una excepcion no controlada.
+            </summary>
+            <remarks>
+            Se registra como manejador para que la respuesta sea siempre un
+            <c>ProblemDetails</c> con la misma forma que el resto de errores, en lugar
+            del volcado de pila o la pagina en blanco que produce el host por defecto.
+            El detalle se registra en el log y no se devuelve: la respuesta solo lleva el
+            <c>traceId</c> que permite encontrarlo.
+            </remarks>
+            <param name="logger">Registrador de la aplicacion.</param>
+        </member>
+        <member name="M:PokemonApi.Api.Infrastructure.UnexpectedExceptionHandler.TryHandleAsync(Microsoft.AspNetCore.Http.HttpContext,System.Exception,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:PokemonApi.Api.Infrastructure.ValidationExceptionHandler">
+            <summary>
+            Convierte un <see cref="T:PokemonApi.Application.Common.Validation.ValidationException"/> en un <c>ProblemDetails</c>
+            con codigo 400 y el detalle de cada campo.
+            </summary>
+            <remarks>
+            La validacion de la peticion se ejecuta en la cadena de comportamientos, fuera
+            del endpoint, asi que su excepcion llega aqui. Devolver 400 en lugar de 500
+            es lo que permite a un cliente de API distinguir "te he misunderstood" de
+            "algo se ha roto por mi culpa".
+            </remarks>
+        </member>
+        <member name="M:PokemonApi.Api.Infrastructure.ValidationExceptionHandler.#ctor(Microsoft.Extensions.Logging.ILogger{PokemonApi.Api.Infrastructure.ValidationExceptionHandler})">
+            <summary>
+            Convierte un <see cref="T:PokemonApi.Application.Common.Validation.ValidationException"/> en un <c>ProblemDetails</c>
+            con codigo 400 y el detalle de cada campo.
+            </summary>
+            <remarks>
+            La validacion de la peticion se ejecuta en la cadena de comportamientos, fuera
+            del endpoint, asi que su excepcion llega aqui. Devolver 400 en lugar de 500
+            es lo que permite a un cliente de API distinguir "te he misunderstood" de
+            "algo se ha roto por mi culpa".
+            </remarks>
+        </member>
+        <member name="M:PokemonApi.Api.Infrastructure.ValidationExceptionHandler.TryHandleAsync(Microsoft.AspNetCore.Http.HttpContext,System.Exception,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:PokemonApi.Api.Infrastructure.XmlCommentIndex">
+            <summary>
+            Indice de los comentarios XML de los tres ensamblados que forman la API.
+            </summary>
+            <remarks>
+            <para>
+            El generador nativo de OpenAPI de .NET no lee los archivos de documentacion
+            XML, y en este proyecto el resumen de cada tipo y cada propiedad es
+            precisamente la mitad del valor de la referencia. Sin este indice, el
+            esquema de <c>PokemonDetailResponse</c> seria una lista de nombres de
+            propiedad sin explicar, que es justo lo que el cliente no quiere.
+            </para>
+            <para>
+            Se indexa en memoria al arrancar y no en cada peticion: el documento se
+            genera una vez y sus entradas se reciclan para todos los esquemas.
+            </para>
+            </remarks>
+        </member>
+        <member name="M:PokemonApi.Api.Infrastructure.XmlCommentIndex.Create">
+            <summary>
+            Crea el indice leyendo los archivos de documentacion de la API.
+            </summary>
+            <remarks>
+            Se recorren solo los tres ensamblados propios. Los XML del framework y de
+            los paquetes tambien estan en la carpeta de salida, y sus miembros no
+            interesan: lo que se documenta aqui es el contrato de esta API.
+            </remarks>
+            <returns>El indice; vacio si los archivos no estan, para no impedir el arranque.</returns>
+        </member>
+        <member name="M:PokemonApi.Api.Infrastructure.XmlCommentIndex.GetTypeSummary(System.Type)">
+            <summary>
+            Recupera el resumen de un tipo.
+            </summary>
+            <param name="type">Tipo documentado.</param>
+            <returns>El resumen, o <see langword="null"/> si el tipo no lo tiene.</returns>
+        </member>
+        <member name="M:PokemonApi.Api.Infrastructure.XmlCommentIndex.GetPropertySummary(System.Type,System.String)">
+            <summary>
+            Recupera el resumen de una propiedad.
+            </summary>
+            <param name="declaringType">Tipo que declara la propiedad.</param>
+            <param name="propertyName">
+            Nombre de la propiedad en C#, no el nombre con el que se serializa.
+            </param>
+            <returns>El resumen, o <see langword="null"/> si la propiedad no lo tiene.</returns>
+        </member>
+        <member name="M:PokemonApi.Api.Infrastructure.XmlCommentIndex.MemberPath(System.Type)">
+            <summary>
+            Traduce un tipo al identificador de miembro que usa el XML.
+            </summary>
+            <remarks>
+            El identificador separa los tipos anidados con punto, mientras que
+            <see cref="P:System.Type.FullName"/> los separa con <c>+</c>. Los tipos genericos
+            aparecen ademas con el numero de parametros de tipo detras de una
+            acotacion grave, y con los argumentos ya cerrados entre corchetes: solo
+            interesa el arity, porque el documento XML documenta la definicion.
+            </remarks>
+            <param name="type">Tipo a traducir.</param>
+            <returns>La ruta del tipo tal y como aparece en el archivo XML.</returns>
+        </member>
+        <member name="T:PokemonApi.Api.Infrastructure.XmlCommentSchemaTransformer">
+            <summary>
+            Añade a cada esquema de OpenAPI el resumen XML de su tipo y de sus
+            propiedades.
+            </summary>
+            <remarks>
+            Es el equivalente de la integracion de comentarios XML queoffercia
+            Swashbuckle y que .NET todavia no trae de serie. Sin el, la referencia
+            mostraria los nombres de las propiedades del detalle sin decir que miden, en
+            que unidad estan ni cuando aparecen.
+            </remarks>
+            <param name="comments">Indice de comentarios XML.</param>
+        </member>
+        <member name="M:PokemonApi.Api.Infrastructure.XmlCommentSchemaTransformer.#ctor(PokemonApi.Api.Infrastructure.XmlCommentIndex)">
+            <summary>
+            Añade a cada esquema de OpenAPI el resumen XML de su tipo y de sus
+            propiedades.
+            </summary>
+            <remarks>
+            Es el equivalente de la integracion de comentarios XML queoffercia
+            Swashbuckle y que .NET todavia no trae de serie. Sin el, la referencia
+            mostraria los nombres de las propiedades del detalle sin decir que miden, en
+            que unidad estan ni cuando aparecen.
+            </remarks>
+            <param name="comments">Indice de comentarios XML.</param>
+        </member>
+        <member name="M:PokemonApi.Api.Infrastructure.XmlCommentSchemaTransformer.TransformAsync(Microsoft.OpenApi.Models.OpenApiSchema,Microsoft.AspNetCore.OpenApi.OpenApiSchemaTransformerContext,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:Program">
+            <summary>
+            Punto de entrada de la API.
+            </summary>
+            <remarks>
+            Se declara como <c>public partial class Program</c> porque las sentencias de
+            nivel superior generan una clase <c>Program</c> interna, y
+            <c>WebApplicationFactory</c> necesita poder referenciarla para arrancar la
+            aplicacion desde los tests de integracion.
+            </remarks>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.BindingFailurePattern_0">
+            <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the BindingFailurePattern method.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.BindingFailurePattern_0.Instance">
+            <summary>Cached, thread-safe singleton instance.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.BindingFailurePattern_0.#ctor">
+            <summary>Initializes the instance.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.BindingFailurePattern_0.RunnerFactory">
+            <summary>Provides a factory for creating <see cref="T:System.Text.RegularExpressions.RegexRunner"/> instances to be used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.BindingFailurePattern_0.RunnerFactory.CreateInstance">
+            <summary>Creates an instance of a <see cref="T:System.Text.RegularExpressions.RegexRunner"/> used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.BindingFailurePattern_0.RunnerFactory.Runner">
+            <summary>Provides the runner that contains the custom logic implementing the specified regular expression.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.BindingFailurePattern_0.RunnerFactory.Runner.Scan(System.ReadOnlySpan{System.Char})">
+            <summary>Scan the <paramref name="inputSpan"/> starting from base.runtextstart for the next match.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.BindingFailurePattern_0.RunnerFactory.Runner.TryFindNextPossibleStartingPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Search <paramref name="inputSpan"/> starting from base.runtextpos for the next location a match could possibly start.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if a possible match was found; false if no more matches are possible.</returns>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.BindingFailurePattern_0.RunnerFactory.Runner.TryMatchAtCurrentPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Determine whether <paramref name="inputSpan"/> at base.runtextpos is a match for the regular expression.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if the regular expression matches at the current position; otherwise, false.</returns>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.Utilities">
+            <summary>Helper methods used by generated <see cref="T:System.Text.RegularExpressions.Regex"/>-derived implementations.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.Utilities.s_defaultTimeout">
+            <summary>Default timeout value set in <see cref="T:System.AppContext"/>, or <see cref="F:System.Text.RegularExpressions.Regex.InfiniteMatchTimeout"/> if none was set.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.Utilities.s_hasTimeout">
+            <summary>Whether <see cref="F:System.Text.RegularExpressions.Generated.Utilities.s_defaultTimeout"/> is non-infinite.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.Utilities.StackPop(System.Int32[],System.Int32@,System.Int32@,System.Int32@)">
+            <summary>Pops 2 values from the backtracking stack.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.Utilities.StackPush(System.Int32[]@,System.Int32@,System.Int32,System.Int32)">
+            <summary>Pushes 2 values onto the backtracking stack.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.Utilities.s_indexOfString_85E35DE3E6040B7DAAED864E5025A69D39B7360FB37B20E191CC294293B1BC38">
+            <summary>Supports searching for the string "Failed to bind parameter ".</summary>
+        </member>
+    </members>
+</doc>

@@ -1,0 +1,2268 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>PokemonApi.Application</name>
+    </assembly>
+    <members>
+        <member name="T:PokemonApi.Application.Abstractions.Messaging.IPipelineBehavior`2">
+            <summary>
+            Comportamiento transversal que envuelve la ejecucion de un handler.
+            </summary>
+            <typeparam name="TRequest">Tipo de la peticion.</typeparam>
+            <typeparam name="TResponse">Tipo de la respuesta.</typeparam>
+            <remarks>
+            Los comportamientos se encadenan en el orden de registro y el ultimo
+            registrado es el mas externo. Si uno de ellos no invoca al siguiente, la
+            peticion no llega al handler: es el mecanismo habitual para implementar
+            cache, validacion o cortocircuitos.
+            </remarks>
+        </member>
+        <member name="M:PokemonApi.Application.Abstractions.Messaging.IPipelineBehavior`2.HandleAsync(`0,PokemonApi.Application.Abstractions.Messaging.RequestHandlerDelegate{`1},System.Threading.CancellationToken)">
+            <summary>Ejecuta el comportamiento y continua la cadena.</summary>
+            <param name="request">Peticion recibida.</param>
+            <param name="next">Siguiente eslabon de la cadena.</param>
+            <param name="cancellationToken">Token de cancelacion.</param>
+            <returns>Resultado del handler.</returns>
+        </member>
+        <member name="T:PokemonApi.Application.Abstractions.Messaging.RequestHandlerDelegate`1">
+            <summary>
+            Delegado que representa el siguiente eslabon de la cadena de comportamientos.
+            </summary>
+            <typeparam name="TResponse">Tipo de la respuesta.</typeparam>
+            <param name="cancellationToken">Token de cancelacion.</param>
+            <returns>Resultado del handler.</returns>
+        </member>
+        <member name="T:PokemonApi.Application.Abstractions.Messaging.IRequest`1">
+            <summary>
+            Peticion que produce un <typeparamref name="TResponse"/> cuando se envia a
+            travers del <see cref="T:PokemonApi.Application.Abstractions.Messaging.ISender"/>.
+            </summary>
+            <typeparam name="TResponse">Tipo de la respuesta del caso de uso.</typeparam>
+            <remarks>
+            Los casos de uso se modelan como mensajes con un unico handler, de modo que
+            anadir comportamiento transversal (validacion, logging, cache) no obliga a
+            tocar la logica de negocio.
+            </remarks>
+        </member>
+        <member name="T:PokemonApi.Application.Abstractions.Messaging.IRequestHandler`2">
+            <summary>
+            Manejador de una peticion.
+            </summary>
+            <typeparam name="TRequest">Tipo de la peticion.</typeparam>
+            <typeparam name="TResponse">Tipo de la respuesta.</typeparam>
+            <remarks>
+            Se registra en el contenedor de inyeccion de dependencias con ciclo de vida
+            <see cref="F:Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped"/>,
+            por lo que puede depender de otros servicios con el mismo ciclo de vida.
+            </remarks>
+        </member>
+        <member name="M:PokemonApi.Application.Abstractions.Messaging.IRequestHandler`2.HandleAsync(`0,System.Threading.CancellationToken)">
+            <summary>Ejecuta el caso de uso.</summary>
+            <param name="request">Peticion recibida.</param>
+            <param name="cancellationToken">Token de cancelacion.</param>
+            <returns>Resultado del caso de uso.</returns>
+        </member>
+        <member name="T:PokemonApi.Application.Abstractions.Messaging.ISender">
+            <summary>
+            Punto de entrada para ejecutar casos de uso.
+            </summary>
+            <remarks>
+            Los endpoints HTTP no llaman a los handlers directamente: envian la
+            peticion a traves del <see cref="T:PokemonApi.Application.Abstractions.Messaging.ISender"/>. Gracias a esa indireccion,
+            los comportamientos transversales se aplican automaticamente y un endpoint no
+            necesita saber nada sobre la implementacion del caso de uso.
+            </remarks>
+        </member>
+        <member name="M:PokemonApi.Application.Abstractions.Messaging.ISender.SendAsync``1(PokemonApi.Application.Abstractions.Messaging.IRequest{``0},System.Threading.CancellationToken)">
+            <summary>Envia una peticion a su handler.</summary>
+            <typeparam name="TResponse">Tipo de la respuesta esperada.</typeparam>
+            <param name="request">Peticion a ejecutar.</param>
+            <param name="cancellationToken">Token de cancelacion.</param>
+            <returns>Resultado del caso de uso.</returns>
+        </member>
+        <member name="T:PokemonApi.Application.Abstractions.Repositories.ICatalogRepository">
+            <summary>
+            Fuente de lectura de los catalogos auxiliares (generaciones, tipos,
+            habilidades, grupos de huevo).
+            </summary>
+            <remarks>
+            Se separa de <see cref="T:PokemonApi.Application.Abstractions.Repositories.IPokemonRepository"/> porque los catalogos son
+            practicamente estaticos: se consultan por separado, se cachean de forma
+            independiente y no admiten filtros.
+            </remarks>
+        </member>
+        <member name="M:PokemonApi.Application.Abstractions.Repositories.ICatalogRepository.GetGenerationsAsync(System.Threading.CancellationToken)">
+            <summary>Devuelve las generaciones presentes en el catalogo.</summary>
+            <param name="cancellationToken">Token de cancelacion.</param>
+            <returns>Las generaciones ordenadas por identificador.</returns>
+        </member>
+        <member name="M:PokemonApi.Application.Abstractions.Repositories.ICatalogRepository.GetTypesAsync(System.Threading.CancellationToken)">
+            <summary>Devuelve los tipos presentes en el catalogo.</summary>
+            <param name="cancellationToken">Token de cancelacion.</param>
+            <returns>Los tipos con su recuento de Pokemon.</returns>
+        </member>
+        <member name="M:PokemonApi.Application.Abstractions.Repositories.ICatalogRepository.GetAbilitiesAsync(System.Threading.CancellationToken)">
+            <summary>Devuelve las habilidades presentes en el catalogo.</summary>
+            <param name="cancellationToken">Token de cancelacion.</param>
+            <returns>Las habilidades con su recuento de Pokemon.</returns>
+        </member>
+        <member name="M:PokemonApi.Application.Abstractions.Repositories.ICatalogRepository.GetEggGroupsAsync(System.Threading.CancellationToken)">
+            <summary>Devuelve los grupos de huevo presentes en el catalogo.</summary>
+            <param name="cancellationToken">Token de cancelacion.</param>
+            <returns>Los grupos de huevo.</returns>
+        </member>
+        <member name="M:PokemonApi.Application.Abstractions.Repositories.ICatalogRepository.GetHabitatsAsync(System.Threading.CancellationToken)">
+            <summary>Devuelve los habitats presentes en el catalogo.</summary>
+            <param name="cancellationToken">Token de cancelacion.</param>
+            <returns>Los habitats, ordenados alfabeticamente.</returns>
+        </member>
+        <member name="M:PokemonApi.Application.Abstractions.Repositories.ICatalogRepository.GetRegionsAsync(System.Threading.CancellationToken)">
+            <summary>Devuelve las regiones presentes en el catalogo.</summary>
+            <param name="cancellationToken">Token de cancelacion.</param>
+            <returns>Las regiones, ordenadas alfabeticamente.</returns>
+        </member>
+        <member name="T:PokemonApi.Application.Abstractions.Repositories.IPokemonRepository">
+            <summary>
+            Fuente de lectura del catalogo de Pokemon.
+            </summary>
+            <remarks>
+            Vive en la capa de aplicacion y no en la de infraestructura: la inversion de
+            dependencias permite que los casos de uso se prueben con dobles de test sin
+            levantar base de datos ni cargar el dataset real.
+            </remarks>
+        </member>
+        <member name="M:PokemonApi.Application.Abstractions.Repositories.IPokemonRepository.GetByIdAsync(System.Int32,System.Threading.CancellationToken)">
+            <summary>Devuelve un Pokemon por su identificador de la Poke&#x27;dex.</summary>
+            <param name="id">Identificador de la Poke&#x27;dex.</param>
+            <param name="cancellationToken">Token de cancelacion.</param>
+            <returns>El Pokemon, o <see langword="null"/> si no existe.</returns>
+        </member>
+        <member name="M:PokemonApi.Application.Abstractions.Repositories.IPokemonRepository.GetByNameAsync(System.String,System.Threading.CancellationToken)">
+            <summary>Devuelve un Pokemon por su nombre canonico.</summary>
+            <param name="name">Slug canonico del nombre (p. ej. <c>pikachu</c>).</param>
+            <param name="cancellationToken">Token de cancelacion.</param>
+            <returns>El Pokemon, o <see langword="null"/> si no existe.</returns>
+        </member>
+        <member name="M:PokemonApi.Application.Abstractions.Repositories.IPokemonRepository.SearchAsync(PokemonApi.Application.Common.Queries.PokemonSearchQuery,System.Threading.CancellationToken)">
+            <summary>
+            Devuelve una pagina de Pokemon que cumplen el filtro indicado.
+            </summary>
+            <param name="query">Filtros, orden y paginacion solicitados.</param>
+            <param name="cancellationToken">Token de cancelacion.</param>
+            <returns>La pagina de resultados y el total de coincidencias.</returns>
+        </member>
+        <member name="M:PokemonApi.Application.Abstractions.Repositories.IPokemonRepository.GetEvolutionChainAsync(System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Devuelve los Pokemon de una cadena evolutiva, con la forma base primero
+            y el resto ordenados por identificador.
+            </summary>
+            <remarks>
+            El orden importa: los casos de uso presentan la cadena como una progresion
+            desde la forma base, y un orden derivado solo del identificador no la
+            respectaria.
+            </remarks>
+            <param name="chainId">Identificador de la cadena evolutiva.</param>
+            <param name="cancellationToken">Token de cancelacion.</param>
+            <returns>Los Pokemon que componen la cadena.</returns>
+        </member>
+        <member name="T:PokemonApi.Application.ApplicationServiceCollectionExtensions">
+            <summary>
+            Registro de dependencias de la capa de aplicacion.
+            </summary>
+        </member>
+        <member name="M:PokemonApi.Application.ApplicationServiceCollectionExtensions.AddApplication(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            Registra los casos de uso, sus validadores y los servicios de soporte.
+            </summary>
+            <param name="services">Coleccion de servicios.</param>
+            <returns>La misma coleccion, para permitir el encadenamiento.</returns>
+        </member>
+        <member name="M:PokemonApi.Application.ApplicationServiceCollectionExtensions.RegisterImplementationsOf(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Reflection.Assembly,System.Type)">
+            <summary>
+            Registra con ciclo de vida Scoped todas las implementaciones concretas
+            de <paramref name="serviceDefinition"/> que hay en el ensamblado.
+            </summary>
+            <remarks>
+            Se usa la convencion "una implementacion por contrato" en lugar de un
+            registro manual: añadir un caso de uso nuevo no obliga a tocar esta clase,
+            y un olvido se detecta inmediatamente en los tests de integracion porque
+            el endpoint responde 500 en lugar de 404.
+            </remarks>
+        </member>
+        <member name="T:PokemonApi.Application.Common.Pagination.PagedResult`1">
+            <summary>
+            Pagina de resultados junto con los metadatos que necesita el cliente para
+            navegar el resto del catalogo.
+            </summary>
+            <remarks>
+            Se agrupan <c>Items</c>, <c>Page</c>, <c>PageSize</c> y <c>TotalCount</c>
+            en un unico objeto para que ningun endpoint pueda olvidarse de devolver los
+            metadatos de paginacion.
+            </remarks>
+            <typeparam name="T">Tipo de los elementos devueltos.</typeparam>
+            <param name="Items">Elementos de la pagina actual.</param>
+            <param name="Page">Numero de la pagina actual, empezando en 1.</param>
+            <param name="PageSize">Cantidad maxima de elementos por pagina.</param>
+            <param name="TotalCount">Total de elementos que cumplen el filtro, en todas las paginas.</param>
+        </member>
+        <member name="M:PokemonApi.Application.Common.Pagination.PagedResult`1.#ctor(System.Collections.Generic.IReadOnlyList{`0},System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Pagina de resultados junto con los metadatos que necesita el cliente para
+            navegar el resto del catalogo.
+            </summary>
+            <remarks>
+            Se agrupan <c>Items</c>, <c>Page</c>, <c>PageSize</c> y <c>TotalCount</c>
+            en un unico objeto para que ningun endpoint pueda olvidarse de devolver los
+            metadatos de paginacion.
+            </remarks>
+            <typeparam name="T">Tipo de los elementos devueltos.</typeparam>
+            <param name="Items">Elementos de la pagina actual.</param>
+            <param name="Page">Numero de la pagina actual, empezando en 1.</param>
+            <param name="PageSize">Cantidad maxima de elementos por pagina.</param>
+            <param name="TotalCount">Total de elementos que cumplen el filtro, en todas las paginas.</param>
+        </member>
+        <member name="P:PokemonApi.Application.Common.Pagination.PagedResult`1.Items">
+            <summary>Elementos de la pagina actual.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Common.Pagination.PagedResult`1.Page">
+            <summary>Numero de la pagina actual, empezando en 1.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Common.Pagination.PagedResult`1.PageSize">
+            <summary>Cantidad maxima de elementos por pagina.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Common.Pagination.PagedResult`1.TotalCount">
+            <summary>Total de elementos que cumplen el filtro, en todas las paginas.</summary>
+        </member>
+        <member name="M:PokemonApi.Application.Common.Pagination.PagedResult`1.Empty(System.Int32,System.Int32)">
+            <summary>Crea una pagina vacia.</summary>
+        </member>
+        <member name="M:PokemonApi.Application.Common.Pagination.PagedResult`1.Create(System.Collections.Generic.IEnumerable{`0},System.Int32,System.Int32)">
+            <summary>
+            Crea una pagina a partir de la secuencia completa de resultados que
+            cumplen el filtro.
+            </summary>
+            <remarks>
+            La secuencia se materializa una sola vez porque hacen falta tanto el
+            <see cref="P:PokemonApi.Application.Common.Pagination.PagedResult`1.TotalCount"/> como los elementos de la pagina: recorrerla dos
+            veces obligaria a reevaluar todos los filtros, que es la parte cara de
+            una consulta de catalogo.
+            </remarks>
+            <param name="source">Todos los resultados, ya filtrados y ordenados.</param>
+            <param name="page">Pagina solicitada, empezando en 1.</param>
+            <param name="pageSize">Cantidad de elementos por pagina.</param>
+            <returns>La pagina correspondiente.</returns>
+            <exception cref="T:System.ArgumentOutOfRangeException">Si la pagina o el tamano no son validos.</exception>
+        </member>
+        <member name="P:PokemonApi.Application.Common.Pagination.PagedResult`1.TotalPages">
+            <summary>Total de paginas necesarias para recorrer todos los resultados.</summary>
+            <remarks>
+            Es cero cuando no hay resultados, de modo que el cliente puede distinguir
+            "sin resultados" de "resultados parciales".
+            </remarks>
+        </member>
+        <member name="P:PokemonApi.Application.Common.Pagination.PagedResult`1.HasPreviousPage">
+            <summary>Indica si existe una pagina anterior.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Common.Pagination.PagedResult`1.HasNextPage">
+            <summary>Indica si existe una pagina posterior.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Common.Pagination.PagedResult`1.Count">
+            <summary>Numero de elementos de la pagina actual.</summary>
+        </member>
+        <member name="T:PokemonApi.Application.Common.Pagination.PageRequest">
+            <summary>
+            Pagina una solicitud del cliente.
+            </summary>
+            <param name="Page">Pagina solicitada, empezando en 1.</param>
+            <param name="PageSize">Cantidad de elementos por pagina.</param>
+            <param name="MaxPageSize">Tope maximo admitted por pagina, definido por el servidor.</param>
+        </member>
+        <member name="M:PokemonApi.Application.Common.Pagination.PageRequest.#ctor(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Pagina una solicitud del cliente.
+            </summary>
+            <param name="Page">Pagina solicitada, empezando en 1.</param>
+            <param name="PageSize">Cantidad de elementos por pagina.</param>
+            <param name="MaxPageSize">Tope maximo admitted por pagina, definido por el servidor.</param>
+        </member>
+        <member name="P:PokemonApi.Application.Common.Pagination.PageRequest.Page">
+            <summary>Pagina solicitada, empezando en 1.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Common.Pagination.PageRequest.PageSize">
+            <summary>Cantidad de elementos por pagina.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Common.Pagination.PageRequest.MaxPageSize">
+            <summary>Tope maximo admitted por pagina, definido por el servidor.</summary>
+        </member>
+        <member name="F:PokemonApi.Application.Common.Pagination.PageRequest.FirstPage">
+            <summary>Valor minimo de pagina.</summary>
+        </member>
+        <member name="F:PokemonApi.Application.Common.Pagination.PageRequest.DefaultPageSize">
+            <summary>Cantidad de elementos por pagina cuando el cliente no indica ninguna.</summary>
+        </member>
+        <member name="M:PokemonApi.Application.Common.Pagination.PageRequest.Default(System.Int32)">
+            <summary>Devuelve una solicitud de pagina con los valores por defecto.</summary>
+            <param name="maxPageSize">Tope maximo admitido por pagina.</param>
+            <returns>La primera pagina con el tamano por defecto.</returns>
+        </member>
+        <member name="M:PokemonApi.Application.Common.Pagination.PageRequest.Create(System.Nullable{System.Int32},System.Nullable{System.Int32},System.Int32)">
+            <summary>Normaliza y valida los parametros de paginacion recibidos.</summary>
+            <param name="page">Pagina solicitada, o <see langword="null"/> para usar la primera.</param>
+            <param name="pageSize">Tamano de pagina, o <see langword="null"/> para usar el valor por defecto.</param>
+            <param name="maxPageSize">Tope maximo admitido por pagina.</param>
+            <returns>La solicitud normalizada, o un error de validacion.</returns>
+        </member>
+        <member name="P:PokemonApi.Application.Common.Pagination.PageRequest.Skip">
+            <summary>Cantidad de elementos a omitir para alcanzar la primera fila de la pagina.</summary>
+        </member>
+        <member name="T:PokemonApi.Application.Common.Pagination.PageResponse`1">
+            <summary>
+            Envoltura de una pagina de resultados junto con sus metadatos de
+            paginacion, tal y como se expone en la respuesta HTTP.
+            </summary>
+            <typeparam name="T">Tipo de los elementos.</typeparam>
+            <param name="Items">Elementos de la pagina actual.</param>
+            <param name="Page">Numero de la pagina actual, empezando en 1.</param>
+            <param name="PageSize">Cantidad de elementos por pagina.</param>
+            <param name="TotalCount">Total de elementos que cumplen el filtro.</param>
+            <param name="TotalPages">Total de paginas disponibles.</param>
+            <param name="HasPreviousPage">Si existe una pagina anterior.</param>
+            <param name="HasNextPage">Si existe una pagina posterior.</param>
+        </member>
+        <member name="M:PokemonApi.Application.Common.Pagination.PageResponse`1.#ctor(System.Collections.Generic.IReadOnlyList{`0},System.Int32,System.Int32,System.Int32,System.Int32,System.Boolean,System.Boolean)">
+            <summary>
+            Envoltura de una pagina de resultados junto con sus metadatos de
+            paginacion, tal y como se expone en la respuesta HTTP.
+            </summary>
+            <typeparam name="T">Tipo de los elementos.</typeparam>
+            <param name="Items">Elementos de la pagina actual.</param>
+            <param name="Page">Numero de la pagina actual, empezando en 1.</param>
+            <param name="PageSize">Cantidad de elementos por pagina.</param>
+            <param name="TotalCount">Total de elementos que cumplen el filtro.</param>
+            <param name="TotalPages">Total de paginas disponibles.</param>
+            <param name="HasPreviousPage">Si existe una pagina anterior.</param>
+            <param name="HasNextPage">Si existe una pagina posterior.</param>
+        </member>
+        <member name="P:PokemonApi.Application.Common.Pagination.PageResponse`1.Items">
+            <summary>Elementos de la pagina actual.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Common.Pagination.PageResponse`1.Page">
+            <summary>Numero de la pagina actual, empezando en 1.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Common.Pagination.PageResponse`1.PageSize">
+            <summary>Cantidad de elementos por pagina.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Common.Pagination.PageResponse`1.TotalCount">
+            <summary>Total de elementos que cumplen el filtro.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Common.Pagination.PageResponse`1.TotalPages">
+            <summary>Total de paginas disponibles.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Common.Pagination.PageResponse`1.HasPreviousPage">
+            <summary>Si existe una pagina anterior.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Common.Pagination.PageResponse`1.HasNextPage">
+            <summary>Si existe una pagina posterior.</summary>
+        </member>
+        <member name="M:PokemonApi.Application.Common.Pagination.PageResponse`1.FromResult(PokemonApi.Application.Common.Pagination.PagedResult{`0})">
+            <summary>Convierte un resultado paginado interno en su representacion de API.</summary>
+            <param name="result">Resultado paginado interno.</param>
+            <returns>La representacion de API.</returns>
+        </member>
+        <member name="M:PokemonApi.Application.Common.Pagination.PageResponse`1.Empty(System.Int32,System.Int32)">
+            <summary>Crea una respuesta de pagina vacia.</summary>
+            <param name="page">Pagina solicitada.</param>
+            <param name="pageSize">Tamano de pagina.</param>
+            <returns>Una respuesta sin elementos.</returns>
+        </member>
+        <member name="T:PokemonApi.Application.Common.PokemonGenerationExtensions">
+            <summary>
+            Conversiones entre <see cref="T:PokemonApi.Domain.Enumerations.PokemonGeneration"/> y su representacion
+            textual.
+            </summary>
+        </member>
+        <member name="M:PokemonApi.Application.Common.PokemonGenerationExtensions.ToSlug(PokemonApi.Domain.Enumerations.PokemonGeneration)">
+            <summary>
+            Devuelve el slug de la generacion tal y como aparece en las URLs de la
+            API: <c>generation-i</c>, <c>generation-ii</c>, ..., <c>generation-ix</c>.
+            </summary>
+            <param name="generation">Generacion del dominio.</param>
+            <returns>El slug de la generacion.</returns>
+        </member>
+        <member name="M:PokemonApi.Application.Common.PokemonGenerationExtensions.TryParse(System.String,PokemonApi.Domain.Enumerations.PokemonGeneration@)">
+            <summary>
+            Intenta convertir un texto en una generacion, aceptando tanto el numero
+            (<c>3</c>) como el slug (<c>generation-iii</c>).
+            </summary>
+            <param name="value">Texto de origen.</param>
+            <param name="generation">Generacion interpretada.</param>
+            <returns><see langword="true"/> si el texto corresponde a una generacion valida.</returns>
+        </member>
+        <member name="T:PokemonApi.Application.Common.Queries.PokemonSortBy">
+            <summary>
+            Criterio de ordenamiento de un listado de Pokemon.
+            </summary>
+            <param name="Field">Campo por el que ordenar.</param>
+            <param name="Direction">Sentido del ordenamiento.</param>
+        </member>
+        <member name="M:PokemonApi.Application.Common.Queries.PokemonSortBy.#ctor(PokemonApi.Domain.Enumerations.PokemonSortField,PokemonApi.Domain.Enumerations.SortDirection)">
+            <summary>
+            Criterio de ordenamiento de un listado de Pokemon.
+            </summary>
+            <param name="Field">Campo por el que ordenar.</param>
+            <param name="Direction">Sentido del ordenamiento.</param>
+        </member>
+        <member name="P:PokemonApi.Application.Common.Queries.PokemonSortBy.Field">
+            <summary>Campo por el que ordenar.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Common.Queries.PokemonSortBy.Direction">
+            <summary>Sentido del ordenamiento.</summary>
+        </member>
+        <member name="T:PokemonApi.Application.Common.Queries.StatThreshold">
+            <summary>
+            Umbral minimo para una estadistica concreta.
+            </summary>
+            <param name="Stat">Estadistica evaluada.</param>
+            <param name="Value">Valor minimo, inclusive.</param>
+        </member>
+        <member name="M:PokemonApi.Application.Common.Queries.StatThreshold.#ctor(PokemonApi.Domain.Enumerations.PokemonStat,System.Int32)">
+            <summary>
+            Umbral minimo para una estadistica concreta.
+            </summary>
+            <param name="Stat">Estadistica evaluada.</param>
+            <param name="Value">Valor minimo, inclusive.</param>
+        </member>
+        <member name="P:PokemonApi.Application.Common.Queries.StatThreshold.Stat">
+            <summary>Estadistica evaluada.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Common.Queries.StatThreshold.Value">
+            <summary>Valor minimo, inclusive.</summary>
+        </member>
+        <member name="T:PokemonApi.Application.Common.Queries.PokemonSearchQuery">
+            <summary>
+            Criterios de busqueda sobre el catalogo de Pokemon.
+            </summary>
+            <remarks>
+            <para>
+            Se modela como un objeto inmutable con semantica de "AND" entre filtros: un
+            Pokemon debe cumplir todos los criterios indicados. Los valores de un mismo
+            campo se combinan con "OR", de modo que <c>type=fire,water</c> devuelve los
+            de fuego y los de agua.
+            </para>
+            <para>
+            Las propiedades anulables significan "sin restriction": un filtro que el
+            cliente no envia no debe reducir el conjunto de resultados.
+            </para>
+            </remarks>
+            <param name="Name">Fragmento del nombre. Coincidencia parcial, sin distinguir mayusculas.</param>
+            <param name="Types">Tipos que el Pokemon debe tener.</param>
+            <param name="Abilities">Habilidades que el Pokemon debe tener.</param>
+            <param name="Generations">Identificadores de las generaciones admitidas.</param>
+            <param name="Regions">Regiones de pertenencia admitidas.</param>
+            <param name="EggGroups">Grupos de huevo. El Pokemon debe pertenecer a alguno.</param>
+            <param name="Habitats">Habitats. El Pokemon debe pertenecer a alguno.</param>
+            <param name="Rarity">Rareza del Pokemon.</param>
+            <param name="MinHeight">Altura minima.</param>
+            <param name="MaxHeight">Altura maxima.</param>
+            <param name="MinWeight">Peso minimo.</param>
+            <param name="MaxWeight">Peso maximo.</param>
+            <param name="MinBaseExperience">Experiencia base minima.</param>
+            <param name="MinTotalStats">Suma de estadisticas minima.</param>
+            <param name="MaxTotalStats">Suma de estadisticas maxima.</param>
+            <param name="MinStat">Estadistica y valor minimo que debe alcanzar.</param>
+            <param name="SortBy">Criterio de ordenamiento. Si es <see langword="null"/> se usa el identificador.</param>
+            <param name="Page">Pagina solicitada, empezando en 1.</param>
+            <param name="PageSize">Cantidad de elementos por pagina.</param>
+        </member>
+        <member name="M:PokemonApi.Application.Common.Queries.PokemonSearchQuery.#ctor(System.String,System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyList{System.Int32},System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyList{System.String},System.Nullable{PokemonApi.Domain.Enumerations.PokemonRarity},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Int32},System.Nullable{System.Int32},System.Nullable{System.Int32},PokemonApi.Application.Common.Queries.StatThreshold,PokemonApi.Application.Common.Queries.PokemonSortBy,System.Int32,System.Int32)">
+            <summary>
+            Criterios de busqueda sobre el catalogo de Pokemon.
+            </summary>
+            <remarks>
+            <para>
+            Se modela como un objeto inmutable con semantica de "AND" entre filtros: un
+            Pokemon debe cumplir todos los criterios indicados. Los valores de un mismo
+            campo se combinan con "OR", de modo que <c>type=fire,water</c> devuelve los
+            de fuego y los de agua.
+            </para>
+            <para>
+            Las propiedades anulables significan "sin restriction": un filtro que el
+            cliente no envia no debe reducir el conjunto de resultados.
+            </para>
+            </remarks>
+            <param name="Name">Fragmento del nombre. Coincidencia parcial, sin distinguir mayusculas.</param>
+            <param name="Types">Tipos que el Pokemon debe tener.</param>
+            <param name="Abilities">Habilidades que el Pokemon debe tener.</param>
+            <param name="Generations">Identificadores de las generaciones admitidas.</param>
+            <param name="Regions">Regiones de pertenencia admitidas.</param>
+            <param name="EggGroups">Grupos de huevo. El Pokemon debe pertenecer a alguno.</param>
+            <param name="Habitats">Habitats. El Pokemon debe pertenecer a alguno.</param>
+            <param name="Rarity">Rareza del Pokemon.</param>
+            <param name="MinHeight">Altura minima.</param>
+            <param name="MaxHeight">Altura maxima.</param>
+            <param name="MinWeight">Peso minimo.</param>
+            <param name="MaxWeight">Peso maximo.</param>
+            <param name="MinBaseExperience">Experiencia base minima.</param>
+            <param name="MinTotalStats">Suma de estadisticas minima.</param>
+            <param name="MaxTotalStats">Suma de estadisticas maxima.</param>
+            <param name="MinStat">Estadistica y valor minimo que debe alcanzar.</param>
+            <param name="SortBy">Criterio de ordenamiento. Si es <see langword="null"/> se usa el identificador.</param>
+            <param name="Page">Pagina solicitada, empezando en 1.</param>
+            <param name="PageSize">Cantidad de elementos por pagina.</param>
+        </member>
+        <member name="P:PokemonApi.Application.Common.Queries.PokemonSearchQuery.Name">
+            <summary>Fragmento del nombre. Coincidencia parcial, sin distinguir mayusculas.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Common.Queries.PokemonSearchQuery.Types">
+            <summary>Tipos que el Pokemon debe tener.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Common.Queries.PokemonSearchQuery.Abilities">
+            <summary>Habilidades que el Pokemon debe tener.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Common.Queries.PokemonSearchQuery.Generations">
+            <summary>Identificadores de las generaciones admitidas.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Common.Queries.PokemonSearchQuery.Regions">
+            <summary>Regiones de pertenencia admitidas.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Common.Queries.PokemonSearchQuery.EggGroups">
+            <summary>Grupos de huevo. El Pokemon debe pertenecer a alguno.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Common.Queries.PokemonSearchQuery.Habitats">
+            <summary>Habitats. El Pokemon debe pertenecer a alguno.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Common.Queries.PokemonSearchQuery.Rarity">
+            <summary>Rareza del Pokemon.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Common.Queries.PokemonSearchQuery.MinHeight">
+            <summary>Altura minima.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Common.Queries.PokemonSearchQuery.MaxHeight">
+            <summary>Altura maxima.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Common.Queries.PokemonSearchQuery.MinWeight">
+            <summary>Peso minimo.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Common.Queries.PokemonSearchQuery.MaxWeight">
+            <summary>Peso maximo.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Common.Queries.PokemonSearchQuery.MinBaseExperience">
+            <summary>Experiencia base minima.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Common.Queries.PokemonSearchQuery.MinTotalStats">
+            <summary>Suma de estadisticas minima.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Common.Queries.PokemonSearchQuery.MaxTotalStats">
+            <summary>Suma de estadisticas maxima.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Common.Queries.PokemonSearchQuery.MinStat">
+            <summary>Estadistica y valor minimo que debe alcanzar.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Common.Queries.PokemonSearchQuery.SortBy">
+            <summary>Criterio de ordenamiento. Si es <see langword="null"/> se usa el identificador.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Common.Queries.PokemonSearchQuery.Page">
+            <summary>Pagina solicitada, empezando en 1.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Common.Queries.PokemonSearchQuery.PageSize">
+            <summary>Cantidad de elementos por pagina.</summary>
+        </member>
+        <member name="M:PokemonApi.Application.Common.Queries.PokemonSearchQuery.Unfiltered(System.Int32,System.Int32)">
+            <summary>Devuelve un filtro vacio con la paginacion indicada.</summary>
+            <param name="page">Pagina solicitada.</param>
+            <param name="pageSize">Cantidad de elementos por pagina.</param>
+            <returns>Un filtro que no restringe el catalogo.</returns>
+        </member>
+        <member name="T:PokemonApi.Application.Common.Validation.ValidationException">
+            <summary>
+            Error de validacion de una peticion de entrada.
+            </summary>
+            <remarks>
+            Se propaga como excepcion y se convierte en un <c>ProblemDetails</c> con
+            codigo HTTP 400. Se prefiere a un tipo de retorno validado porque la
+            validacion ocurre en el borde del sistema, no en el centro del dominio, y
+            anadir el caso de fallo a cada firma ensuciaria los casos de uso sin
+            aportar claridad.
+            </remarks>
+        </member>
+        <member name="M:PokemonApi.Application.Common.Validation.ValidationException.#ctor(System.Collections.Generic.IReadOnlyDictionary{System.String,System.String[]})">
+            <summary>Inicializa la excepcion a partir de los fallos detectados.</summary>
+            <param name="failures">Fallos de validacion, indexados por el nombre del campo.</param>
+        </member>
+        <member name="P:PokemonApi.Application.Common.Validation.ValidationException.Failures">
+            <summary>Fallos detectados, indexados por el nombre del campo.</summary>
+        </member>
+        <member name="T:PokemonApi.Application.Common.Validation.IValidator`1">
+            <summary>
+            Valida una peticion antes de que llegue al handler.
+            </summary>
+            <typeparam name="TRequest">Tipo de la peticion validada.</typeparam>
+        </member>
+        <member name="M:PokemonApi.Application.Common.Validation.IValidator`1.Validate(`0)">
+            <summary>Valida la peticion.</summary>
+            <param name="request">Peticion a validar.</param>
+            <returns>
+            Un diccionario de fallos indexado por el nombre del campo. Un
+            diccionario vacio significa que la peticion es valida.
+            </returns>
+        </member>
+        <member name="T:PokemonApi.Application.Common.Validation.IAsyncValidator`1">
+            <summary>
+            Valida una peticion antes de que llegue al handler, cuando comprobar la
+            validez exige consultar el catalogo.
+            </summary>
+            <remarks>
+            Separado de <see cref="T:PokemonApi.Application.Common.Validation.IValidator`1"/> porque un filtro como
+            <c>types=fire</c> solo puede juzgarse consultando los tipos existentes, y esa
+            consulta es asincrona. Forzar la comprobacion dentro de un
+            <see cref="T:PokemonApi.Application.Common.Validation.IValidator`1"/> obligaria a bloquear el hilo o a cambiar el
+            contrato de los repositorios, que es justo lo que se queria evitar.
+            </remarks>
+            <typeparam name="TRequest">Tipo de la peticion validada.</typeparam>
+        </member>
+        <member name="M:PokemonApi.Application.Common.Validation.IAsyncValidator`1.ValidateAsync(`0,System.Threading.CancellationToken)">
+            <summary>Valida la peticion consultando las fuentes de datos necesarias.</summary>
+            <param name="request">Peticion a validar.</param>
+            <param name="cancellationToken">Token de cancelacion.</param>
+            <returns>
+            Un diccionario de fallos indexado por el nombre del campo. Un
+            diccionario vacio significa que la peticion es valida.
+            </returns>
+        </member>
+        <member name="T:PokemonApi.Application.Common.Validation.ValidationRules">
+            <summary>
+            Extensiones para componer reglas de validacion de forma declarativa.
+            </summary>
+        </member>
+        <member name="M:PokemonApi.Application.Common.Validation.ValidationRules.IsMissing(System.String)">
+            <summary>Indica que un valor obligatorio no fue proporcionado.</summary>
+            <param name="value">Valor recibido.</param>
+            <returns><see langword="true"/> si el valor falta.</returns>
+        </member>
+        <member name="M:PokemonApi.Application.Common.Validation.ValidationRules.IsOutOfRange(System.Int32,System.Int32,System.Int32)">
+            <summary>Indica que un entero no cabe en el rango permitido.</summary>
+            <param name="value">Valor recibido.</param>
+            <param name="min">Minimo permitido, inclusive.</param>
+            <param name="max">Maximo permitido, inclusive.</param>
+            <returns><see langword="true"/> si el valor esta fuera de rango.</returns>
+        </member>
+        <member name="T:PokemonApi.Application.Features.Catalog.GetAbilities.AbilityResponse">
+            <summary>
+            Representacion de API de una habilidad.
+            </summary>
+            <param name="Id">Identificador de la habilidad.</param>
+            <param name="Slug">Slug canonico.</param>
+            <param name="Name">Nombre presentable.</param>
+            <param name="IsMainSeries">Si pertenece a la serie principal de juegos.</param>
+            <param name="ShortEffect">Descripcion resumida de su efecto.</param>
+            <param name="PokemonCount">Numero de Pokemon del catalogo que poseen la habilidad.</param>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Catalog.GetAbilities.AbilityResponse.#ctor(System.Int32,System.String,System.String,System.Boolean,System.String,System.Int32)">
+            <summary>
+            Representacion de API de una habilidad.
+            </summary>
+            <param name="Id">Identificador de la habilidad.</param>
+            <param name="Slug">Slug canonico.</param>
+            <param name="Name">Nombre presentable.</param>
+            <param name="IsMainSeries">Si pertenece a la serie principal de juegos.</param>
+            <param name="ShortEffect">Descripcion resumida de su efecto.</param>
+            <param name="PokemonCount">Numero de Pokemon del catalogo que poseen la habilidad.</param>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Catalog.GetAbilities.AbilityResponse.Id">
+            <summary>Identificador de la habilidad.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Catalog.GetAbilities.AbilityResponse.Slug">
+            <summary>Slug canonico.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Catalog.GetAbilities.AbilityResponse.Name">
+            <summary>Nombre presentable.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Catalog.GetAbilities.AbilityResponse.IsMainSeries">
+            <summary>Si pertenece a la serie principal de juegos.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Catalog.GetAbilities.AbilityResponse.ShortEffect">
+            <summary>Descripcion resumida de su efecto.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Catalog.GetAbilities.AbilityResponse.PokemonCount">
+            <summary>Numero de Pokemon del catalogo que poseen la habilidad.</summary>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Catalog.GetAbilities.AbilityResponse.FromDomain(PokemonApi.Domain.Entities.AbilityInfo)">
+            <summary>Convierte una habilidad de dominio en su representacion de API.</summary>
+            <param name="ability">Habilidad de dominio.</param>
+            <returns>La representacion de API.</returns>
+        </member>
+        <member name="T:PokemonApi.Application.Features.Catalog.GetAbilities.GetAbilitiesQuery">
+            <summary>
+            Peticion para listar las habilidades del catalogo.
+            </summary>
+            <param name="Name">Filtro opcional por nombre o descripcion.</param>
+            <param name="IsMainSeries">Filtro opcional por pertenencia a la serie principal.</param>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Catalog.GetAbilities.GetAbilitiesQuery.#ctor(System.String,System.Nullable{System.Boolean})">
+            <summary>
+            Peticion para listar las habilidades del catalogo.
+            </summary>
+            <param name="Name">Filtro opcional por nombre o descripcion.</param>
+            <param name="IsMainSeries">Filtro opcional por pertenencia a la serie principal.</param>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Catalog.GetAbilities.GetAbilitiesQuery.Name">
+            <summary>Filtro opcional por nombre o descripcion.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Catalog.GetAbilities.GetAbilitiesQuery.IsMainSeries">
+            <summary>Filtro opcional por pertenencia a la serie principal.</summary>
+        </member>
+        <member name="T:PokemonApi.Application.Features.Catalog.GetAbilities.GetAbilitiesQueryHandler">
+            <summary>
+            Obtiene las habilidades del catalogo.
+            </summary>
+            <param name="catalog">Repositorio de catalogos.</param>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Catalog.GetAbilities.GetAbilitiesQueryHandler.#ctor(PokemonApi.Application.Abstractions.Repositories.ICatalogRepository)">
+            <summary>
+            Obtiene las habilidades del catalogo.
+            </summary>
+            <param name="catalog">Repositorio de catalogos.</param>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Catalog.GetAbilities.GetAbilitiesQueryHandler.HandleAsync(PokemonApi.Application.Features.Catalog.GetAbilities.GetAbilitiesQuery,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:PokemonApi.Application.Features.Catalog.GetGenerations.GenerationResponse">
+            <summary>
+            Representacion de API de una generacion.
+            </summary>
+            <param name="Id">Identificador de la generacion.</param>
+            <param name="Slug">Slug canonico.</param>
+            <param name="Name">Nombre presentable.</param>
+            <param name="Region">Slug de la region.</param>
+            <param name="RegionName">Nombre presentable de la region.</param>
+            <param name="PokemonCount">Numero de Pokemon de la generacion.</param>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Catalog.GetGenerations.GenerationResponse.#ctor(System.Int32,System.String,System.String,System.String,System.String,System.Int32)">
+            <summary>
+            Representacion de API de una generacion.
+            </summary>
+            <param name="Id">Identificador de la generacion.</param>
+            <param name="Slug">Slug canonico.</param>
+            <param name="Name">Nombre presentable.</param>
+            <param name="Region">Slug de la region.</param>
+            <param name="RegionName">Nombre presentable de la region.</param>
+            <param name="PokemonCount">Numero de Pokemon de la generacion.</param>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Catalog.GetGenerations.GenerationResponse.Id">
+            <summary>Identificador de la generacion.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Catalog.GetGenerations.GenerationResponse.Slug">
+            <summary>Slug canonico.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Catalog.GetGenerations.GenerationResponse.Name">
+            <summary>Nombre presentable.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Catalog.GetGenerations.GenerationResponse.Region">
+            <summary>Slug de la region.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Catalog.GetGenerations.GenerationResponse.RegionName">
+            <summary>Nombre presentable de la region.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Catalog.GetGenerations.GenerationResponse.PokemonCount">
+            <summary>Numero de Pokemon de la generacion.</summary>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Catalog.GetGenerations.GenerationResponse.FromDomain(PokemonApi.Domain.Entities.Generation)">
+            <summary>Convierte una generacion de dominio en su representacion de API.</summary>
+            <param name="generation">Generacion de dominio.</param>
+            <returns>La representacion de API.</returns>
+        </member>
+        <member name="T:PokemonApi.Application.Features.Catalog.GetGenerations.GetGenerationsQuery">
+            <summary>
+            Peticion para listar las generaciones del catalogo.
+            </summary>
+        </member>
+        <member name="T:PokemonApi.Application.Features.Catalog.GetGenerations.GetGenerationsQueryHandler">
+            <summary>
+            Obtiene las generaciones del catalogo.
+            </summary>
+            <param name="catalog">Repositorio de catalogos.</param>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Catalog.GetGenerations.GetGenerationsQueryHandler.#ctor(PokemonApi.Application.Abstractions.Repositories.ICatalogRepository)">
+            <summary>
+            Obtiene las generaciones del catalogo.
+            </summary>
+            <param name="catalog">Repositorio de catalogos.</param>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Catalog.GetGenerations.GetGenerationsQueryHandler.HandleAsync(PokemonApi.Application.Features.Catalog.GetGenerations.GetGenerationsQuery,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:PokemonApi.Application.Features.Catalog.GetReferenceData.CatalogEntryResponse">
+            <summary>
+            Representacion de API de una entrada de catalogo simple.
+            </summary>
+            <param name="Id">Identificador de la entrada.</param>
+            <param name="Slug">Slug canonico.</param>
+            <param name="Name">Nombre presentable.</param>
+            <param name="PokemonCount">Numero de Pokemon asociados a la entrada.</param>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Catalog.GetReferenceData.CatalogEntryResponse.#ctor(System.Int32,System.String,System.String,System.Int32)">
+            <summary>
+            Representacion de API de una entrada de catalogo simple.
+            </summary>
+            <param name="Id">Identificador de la entrada.</param>
+            <param name="Slug">Slug canonico.</param>
+            <param name="Name">Nombre presentable.</param>
+            <param name="PokemonCount">Numero de Pokemon asociados a la entrada.</param>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Catalog.GetReferenceData.CatalogEntryResponse.Id">
+            <summary>Identificador de la entrada.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Catalog.GetReferenceData.CatalogEntryResponse.Slug">
+            <summary>Slug canonico.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Catalog.GetReferenceData.CatalogEntryResponse.Name">
+            <summary>Nombre presentable.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Catalog.GetReferenceData.CatalogEntryResponse.PokemonCount">
+            <summary>Numero de Pokemon asociados a la entrada.</summary>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Catalog.GetReferenceData.CatalogEntryResponse.FromDomain(PokemonApi.Domain.Entities.CatalogEntryInfo)">
+            <summary>Convierte una entrada de dominio en su representacion de API.</summary>
+            <param name="entry">Entrada de dominio.</param>
+            <returns>La representacion de API.</returns>
+        </member>
+        <member name="T:PokemonApi.Application.Features.Catalog.GetReferenceData.EggGroupResponse">
+            <summary>
+            Representacion de API de un grupo de huevo.
+            </summary>
+            <param name="Id">Identificador del grupo.</param>
+            <param name="Slug">Slug canonico.</param>
+            <param name="Name">Nombre presentable.</param>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Catalog.GetReferenceData.EggGroupResponse.#ctor(System.Int32,System.String,System.String)">
+            <summary>
+            Representacion de API de un grupo de huevo.
+            </summary>
+            <param name="Id">Identificador del grupo.</param>
+            <param name="Slug">Slug canonico.</param>
+            <param name="Name">Nombre presentable.</param>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Catalog.GetReferenceData.EggGroupResponse.Id">
+            <summary>Identificador del grupo.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Catalog.GetReferenceData.EggGroupResponse.Slug">
+            <summary>Slug canonico.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Catalog.GetReferenceData.EggGroupResponse.Name">
+            <summary>Nombre presentable.</summary>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Catalog.GetReferenceData.EggGroupResponse.FromDomain(PokemonApi.Domain.Entities.EggGroupInfo)">
+            <summary>Convierte un grupo de huevo de dominio en su representacion de API.</summary>
+            <param name="group">Grupo de huevo de dominio.</param>
+            <returns>La representacion de API.</returns>
+        </member>
+        <member name="T:PokemonApi.Application.Features.Catalog.GetReferenceData.GetHabitatsQuery">
+            <summary>
+            Peticion para listar los habitats presentes en el catalogo.
+            </summary>
+        </member>
+        <member name="T:PokemonApi.Application.Features.Catalog.GetReferenceData.GetHabitatsQueryHandler">
+            <summary>
+            Obtiene los habitats presentes en el catalogo.
+            </summary>
+            <param name="catalog">Repositorio de catalogos.</param>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Catalog.GetReferenceData.GetHabitatsQueryHandler.#ctor(PokemonApi.Application.Abstractions.Repositories.ICatalogRepository)">
+            <summary>
+            Obtiene los habitats presentes en el catalogo.
+            </summary>
+            <param name="catalog">Repositorio de catalogos.</param>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Catalog.GetReferenceData.GetHabitatsQueryHandler.HandleAsync(PokemonApi.Application.Features.Catalog.GetReferenceData.GetHabitatsQuery,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:PokemonApi.Application.Features.Catalog.GetReferenceData.GetRegionsQuery">
+            <summary>
+            Peticion para listar las regiones presentes en el catalogo.
+            </summary>
+        </member>
+        <member name="T:PokemonApi.Application.Features.Catalog.GetReferenceData.GetRegionsQueryHandler">
+            <summary>
+            Obtiene las regiones presentes en el catalogo.
+            </summary>
+            <param name="catalog">Repositorio de catalogos.</param>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Catalog.GetReferenceData.GetRegionsQueryHandler.#ctor(PokemonApi.Application.Abstractions.Repositories.ICatalogRepository)">
+            <summary>
+            Obtiene las regiones presentes en el catalogo.
+            </summary>
+            <param name="catalog">Repositorio de catalogos.</param>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Catalog.GetReferenceData.GetRegionsQueryHandler.HandleAsync(PokemonApi.Application.Features.Catalog.GetReferenceData.GetRegionsQuery,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:PokemonApi.Application.Features.Catalog.GetReferenceData.GetEggGroupsQuery">
+            <summary>
+            Peticion para listar los grupos de huevo del catalogo.
+            </summary>
+        </member>
+        <member name="T:PokemonApi.Application.Features.Catalog.GetReferenceData.GetEggGroupsQueryHandler">
+            <summary>
+            Obtiene los grupos de huevo del catalogo.
+            </summary>
+            <param name="catalog">Repositorio de catalogos.</param>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Catalog.GetReferenceData.GetEggGroupsQueryHandler.#ctor(PokemonApi.Application.Abstractions.Repositories.ICatalogRepository)">
+            <summary>
+            Obtiene los grupos de huevo del catalogo.
+            </summary>
+            <param name="catalog">Repositorio de catalogos.</param>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Catalog.GetReferenceData.GetEggGroupsQueryHandler.HandleAsync(PokemonApi.Application.Features.Catalog.GetReferenceData.GetEggGroupsQuery,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:PokemonApi.Application.Features.Catalog.GetTypes.TypeResponse">
+            <summary>
+            Representacion de API de un tipo de Pokemon.
+            </summary>
+            <param name="Id">Identificador del tipo.</param>
+            <param name="Slug">Slug canonico.</param>
+            <param name="Name">Nombre presentable.</param>
+            <param name="PokemonCount">Numero de Pokemon del catalogo que poseen el tipo.</param>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Catalog.GetTypes.TypeResponse.#ctor(System.Int32,System.String,System.String,System.Int32)">
+            <summary>
+            Representacion de API de un tipo de Pokemon.
+            </summary>
+            <param name="Id">Identificador del tipo.</param>
+            <param name="Slug">Slug canonico.</param>
+            <param name="Name">Nombre presentable.</param>
+            <param name="PokemonCount">Numero de Pokemon del catalogo que poseen el tipo.</param>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Catalog.GetTypes.TypeResponse.Id">
+            <summary>Identificador del tipo.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Catalog.GetTypes.TypeResponse.Slug">
+            <summary>Slug canonico.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Catalog.GetTypes.TypeResponse.Name">
+            <summary>Nombre presentable.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Catalog.GetTypes.TypeResponse.PokemonCount">
+            <summary>Numero de Pokemon del catalogo que poseen el tipo.</summary>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Catalog.GetTypes.TypeResponse.FromDomain(PokemonApi.Domain.Entities.PokemonTypeInfo)">
+            <summary>Convierte un tipo de dominio en su representacion de API.</summary>
+            <param name="type">Tipo de dominio.</param>
+            <returns>La representacion de API.</returns>
+        </member>
+        <member name="T:PokemonApi.Application.Features.Catalog.GetTypes.GetTypesQuery">
+            <summary>
+            Peticion para listar los tipos de Pokemon del catalogo.
+            </summary>
+        </member>
+        <member name="T:PokemonApi.Application.Features.Catalog.GetTypes.GetTypesQueryHandler">
+            <summary>
+            Obtiene los tipos de Pokemon del catalogo.
+            </summary>
+            <param name="catalog">Repositorio de catalogos.</param>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Catalog.GetTypes.GetTypesQueryHandler.#ctor(PokemonApi.Application.Abstractions.Repositories.ICatalogRepository)">
+            <summary>
+            Obtiene los tipos de Pokemon del catalogo.
+            </summary>
+            <param name="catalog">Repositorio de catalogos.</param>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Catalog.GetTypes.GetTypesQueryHandler.HandleAsync(PokemonApi.Application.Features.Catalog.GetTypes.GetTypesQuery,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:PokemonApi.Application.Features.Pokemon.Dtos.MeasureResponse">
+            <summary>
+            Magnitud fisica de un Pokemon con su unidad.
+            </summary>
+            <remarks>
+            Se publica en la unidad convencional de cada familia (metros y kilogramos) y
+            no en la unidad original del dataset (decimetros y hectogramos), para que el
+            cliente pueda usar el mismo numero que recibe en la respuesta como filtro de
+            <c>minHeight</c>, <c>maxHeight</c>, <c>minWeight</c> o <c>maxWeight</c>.
+            </remarks>
+            <param name="Value">Valor de la magnitud.</param>
+            <param name="Unit">Unidad en la que se expresa el valor.</param>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Pokemon.Dtos.MeasureResponse.#ctor(System.Decimal,System.String)">
+            <summary>
+            Magnitud fisica de un Pokemon con su unidad.
+            </summary>
+            <remarks>
+            Se publica en la unidad convencional de cada familia (metros y kilogramos) y
+            no en la unidad original del dataset (decimetros y hectogramos), para que el
+            cliente pueda usar el mismo numero que recibe en la respuesta como filtro de
+            <c>minHeight</c>, <c>maxHeight</c>, <c>minWeight</c> o <c>maxWeight</c>.
+            </remarks>
+            <param name="Value">Valor de la magnitud.</param>
+            <param name="Unit">Unidad en la que se expresa el valor.</param>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.MeasureResponse.Value">
+            <summary>Valor de la magnitud.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.MeasureResponse.Unit">
+            <summary>Unidad en la que se expresa el valor.</summary>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Pokemon.Dtos.MeasureResponse.FromDomain(PokemonApi.Domain.ValueObjects.Measure)">
+            <summary>Convierte una magnitud de dominio en su representacion de API.</summary>
+            <param name="measure">Magnitud de dominio.</param>
+            <returns>La representacion de API, en metros o kilogramos.</returns>
+        </member>
+        <member name="T:PokemonApi.Application.Features.Pokemon.Dtos.SpritesResponse">
+            <summary>
+            Direcciones de las imagenes de un Pokemon.
+            </summary>
+            <param name="OfficialArtwork">Ilustracion oficial de alta resolucion.</param>
+            <param name="OfficialArtworkShiny">Ilustracion oficial de la variante brillante.</param>
+            <param name="HomeArtwork">Ilustracion de portada.</param>
+            <param name="FrontDefault">Sprite frontal, vista por defecto.</param>
+            <param name="FrontShiny">Sprite frontal de la variante brillante.</param>
+            <param name="PixelArt">Sprite de 96x96 px.</param>
+            <param name="Spritesheet">Hoja de sprites con todas las animaciones.</param>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Pokemon.Dtos.SpritesResponse.#ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String)">
+            <summary>
+            Direcciones de las imagenes de un Pokemon.
+            </summary>
+            <param name="OfficialArtwork">Ilustracion oficial de alta resolucion.</param>
+            <param name="OfficialArtworkShiny">Ilustracion oficial de la variante brillante.</param>
+            <param name="HomeArtwork">Ilustracion de portada.</param>
+            <param name="FrontDefault">Sprite frontal, vista por defecto.</param>
+            <param name="FrontShiny">Sprite frontal de la variante brillante.</param>
+            <param name="PixelArt">Sprite de 96x96 px.</param>
+            <param name="Spritesheet">Hoja de sprites con todas las animaciones.</param>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.SpritesResponse.OfficialArtwork">
+            <summary>Ilustracion oficial de alta resolucion.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.SpritesResponse.OfficialArtworkShiny">
+            <summary>Ilustracion oficial de la variante brillante.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.SpritesResponse.HomeArtwork">
+            <summary>Ilustracion de portada.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.SpritesResponse.FrontDefault">
+            <summary>Sprite frontal, vista por defecto.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.SpritesResponse.FrontShiny">
+            <summary>Sprite frontal de la variante brillante.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.SpritesResponse.PixelArt">
+            <summary>Sprite de 96x96 px.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.SpritesResponse.Spritesheet">
+            <summary>Hoja de sprites con todas las animaciones.</summary>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Pokemon.Dtos.SpritesResponse.FromDomain(PokemonApi.Domain.ValueObjects.PokemonSprites)">
+            <summary>Convierte los sprites de dominio en su representacion de API.</summary>
+            <param name="sprites">Sprites de dominio.</param>
+            <returns>La representacion de API.</returns>
+        </member>
+        <member name="T:PokemonApi.Application.Features.Pokemon.Dtos.StatsResponse">
+            <summary>
+            Estadisticas base de un Pokemon.
+            </summary>
+            <param name="Hp">Puntos de vida.</param>
+            <param name="Attack">Ataque fisico.</param>
+            <param name="Defense">Defensa fisica.</param>
+            <param name="SpecialAttack">Ataque especial.</param>
+            <param name="SpecialDefense">Defensa especial.</param>
+            <param name="Speed">Velocidad.</param>
+            <param name="Total">Suma de las seis estadisticas.</param>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Pokemon.Dtos.StatsResponse.#ctor(System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Estadisticas base de un Pokemon.
+            </summary>
+            <param name="Hp">Puntos de vida.</param>
+            <param name="Attack">Ataque fisico.</param>
+            <param name="Defense">Defensa fisica.</param>
+            <param name="SpecialAttack">Ataque especial.</param>
+            <param name="SpecialDefense">Defensa especial.</param>
+            <param name="Speed">Velocidad.</param>
+            <param name="Total">Suma de las seis estadisticas.</param>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.StatsResponse.Hp">
+            <summary>Puntos de vida.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.StatsResponse.Attack">
+            <summary>Ataque fisico.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.StatsResponse.Defense">
+            <summary>Defensa fisica.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.StatsResponse.SpecialAttack">
+            <summary>Ataque especial.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.StatsResponse.SpecialDefense">
+            <summary>Defensa especial.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.StatsResponse.Speed">
+            <summary>Velocidad.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.StatsResponse.Total">
+            <summary>Suma de las seis estadisticas.</summary>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Pokemon.Dtos.StatsResponse.FromDomain(PokemonApi.Domain.ValueObjects.PokemonStats)">
+            <summary>Convierte las estadisticas de dominio en su representacion de API.</summary>
+            <param name="stats">Estadisticas de dominio.</param>
+            <returns>La representacion de API.</returns>
+        </member>
+        <member name="T:PokemonApi.Application.Features.Pokemon.Dtos.AbilityResponse">
+            <summary>
+            Habilidad de un Pokemon.
+            </summary>
+            <param name="Name">Slug canonico de la habilidad.</param>
+            <param name="DisplayName">Nombre presentable.</param>
+            <param name="IsHidden">Si es una habilidad oculta.</param>
+            <param name="Slot">Posicion que ocupa en la especie (1, 2 o 3 para la oculta).</param>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Pokemon.Dtos.AbilityResponse.#ctor(System.String,System.String,System.Boolean,System.Int32)">
+            <summary>
+            Habilidad de un Pokemon.
+            </summary>
+            <param name="Name">Slug canonico de la habilidad.</param>
+            <param name="DisplayName">Nombre presentable.</param>
+            <param name="IsHidden">Si es una habilidad oculta.</param>
+            <param name="Slot">Posicion que ocupa en la especie (1, 2 o 3 para la oculta).</param>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.AbilityResponse.Name">
+            <summary>Slug canonico de la habilidad.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.AbilityResponse.DisplayName">
+            <summary>Nombre presentable.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.AbilityResponse.IsHidden">
+            <summary>Si es una habilidad oculta.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.AbilityResponse.Slot">
+            <summary>Posicion que ocupa en la especie (1, 2 o 3 para la oculta).</summary>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Pokemon.Dtos.AbilityResponse.FromDomain(PokemonApi.Domain.ValueObjects.PokemonAbility)">
+            <summary>Convierte una habilidad de dominio en su representacion de API.</summary>
+            <param name="ability">Habilidad de dominio.</param>
+            <returns>La representacion de API.</returns>
+        </member>
+        <member name="T:PokemonApi.Application.Features.Pokemon.Dtos.EvolutionRequirementResponse">
+            <summary>
+            Condicion que habilita una evolucion.
+            </summary>
+            <param name="Trigger">Evento que dispara la evolucion.</param>
+            <param name="MinLevel">Nivel minimo necesario.</param>
+            <param name="Item">Objeto que se consume al evolucionar.</param>
+            <param name="HeldItem">Objeto que debe llevar encima.</param>
+            <param name="Location">Lugar donde debe producirse.</param>
+            <param name="Gender">Genero requerido: <c>female</c> o <c>male</c>.</param>
+            <param name="KnownMove">Movimiento que debe conocer.</param>
+            <param name="KnownMoveType">Tipo que debe tener el movimiento conocido.</param>
+            <param name="TimeOfDay">Momento del dia requerido.</param>
+            <param name="MinHappiness">Felicidad minima.</param>
+            <param name="MinAffection">Afecto minimo.</param>
+            <param name="MinBeauty">Belleza minima.</param>
+            <param name="NeedsOverworldRain">Si requiere que este lloviendo.</param>
+            <param name="TurnUpsideDown">Si requiere mantener la consola boca abajo.</param>
+            <param name="RelativePhysicalStats">
+            Comparacion de estadisticas exigida, expresada como texto legible
+            (<c>attack &gt; defense</c>, <c>attack = defense</c> o
+            <c>attack &lt; defense</c>). La fuente de datos la codifica como 1, 0 y -1.
+            </param>
+            <param name="PartyType">Tipo de Pokemon que debe acompanar al grupo.</param>
+            <param name="TradeSpecies">Especie a la que hay que intercambiarlo.</param>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Pokemon.Dtos.EvolutionRequirementResponse.#ctor(System.String,System.Nullable{System.Int32},System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Nullable{System.Int32},System.Nullable{System.Int32},System.Nullable{System.Int32},System.Boolean,System.Boolean,System.String,System.String,System.String)">
+            <summary>
+            Condicion que habilita una evolucion.
+            </summary>
+            <param name="Trigger">Evento que dispara la evolucion.</param>
+            <param name="MinLevel">Nivel minimo necesario.</param>
+            <param name="Item">Objeto que se consume al evolucionar.</param>
+            <param name="HeldItem">Objeto que debe llevar encima.</param>
+            <param name="Location">Lugar donde debe producirse.</param>
+            <param name="Gender">Genero requerido: <c>female</c> o <c>male</c>.</param>
+            <param name="KnownMove">Movimiento que debe conocer.</param>
+            <param name="KnownMoveType">Tipo que debe tener el movimiento conocido.</param>
+            <param name="TimeOfDay">Momento del dia requerido.</param>
+            <param name="MinHappiness">Felicidad minima.</param>
+            <param name="MinAffection">Afecto minimo.</param>
+            <param name="MinBeauty">Belleza minima.</param>
+            <param name="NeedsOverworldRain">Si requiere que este lloviendo.</param>
+            <param name="TurnUpsideDown">Si requiere mantener la consola boca abajo.</param>
+            <param name="RelativePhysicalStats">
+            Comparacion de estadisticas exigida, expresada como texto legible
+            (<c>attack &gt; defense</c>, <c>attack = defense</c> o
+            <c>attack &lt; defense</c>). La fuente de datos la codifica como 1, 0 y -1.
+            </param>
+            <param name="PartyType">Tipo de Pokemon que debe acompanar al grupo.</param>
+            <param name="TradeSpecies">Especie a la que hay que intercambiarlo.</param>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.EvolutionRequirementResponse.Trigger">
+            <summary>Evento que dispara la evolucion.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.EvolutionRequirementResponse.MinLevel">
+            <summary>Nivel minimo necesario.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.EvolutionRequirementResponse.Item">
+            <summary>Objeto que se consume al evolucionar.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.EvolutionRequirementResponse.HeldItem">
+            <summary>Objeto que debe llevar encima.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.EvolutionRequirementResponse.Location">
+            <summary>Lugar donde debe producirse.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.EvolutionRequirementResponse.Gender">
+            <summary>Genero requerido: <c>female</c> o <c>male</c>.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.EvolutionRequirementResponse.KnownMove">
+            <summary>Movimiento que debe conocer.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.EvolutionRequirementResponse.KnownMoveType">
+            <summary>Tipo que debe tener el movimiento conocido.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.EvolutionRequirementResponse.TimeOfDay">
+            <summary>Momento del dia requerido.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.EvolutionRequirementResponse.MinHappiness">
+            <summary>Felicidad minima.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.EvolutionRequirementResponse.MinAffection">
+            <summary>Afecto minimo.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.EvolutionRequirementResponse.MinBeauty">
+            <summary>Belleza minima.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.EvolutionRequirementResponse.NeedsOverworldRain">
+            <summary>Si requiere que este lloviendo.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.EvolutionRequirementResponse.TurnUpsideDown">
+            <summary>Si requiere mantener la consola boca abajo.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.EvolutionRequirementResponse.RelativePhysicalStats">
+            <summary>
+            Comparacion de estadisticas exigida, expresada como texto legible
+            (<c>attack &gt; defense</c>, <c>attack = defense</c> o
+            <c>attack &lt; defense</c>). La fuente de datos la codifica como 1, 0 y -1.
+            </summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.EvolutionRequirementResponse.PartyType">
+            <summary>Tipo de Pokemon que debe acompanar al grupo.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.EvolutionRequirementResponse.TradeSpecies">
+            <summary>Especie a la que hay que intercambiarlo.</summary>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Pokemon.Dtos.EvolutionRequirementResponse.FromDomain(PokemonApi.Domain.ValueObjects.EvolutionRequirement)">
+            <summary>Convierte un requisito de dominio en su representacion de API.</summary>
+            <param name="requirement">Requisito de dominio.</param>
+            <returns>La representacion de API.</returns>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Pokemon.Dtos.EvolutionRequirementResponse.DescribeRelativePhysicalStats(System.Nullable{System.Int32})">
+            <summary>
+            Traduce la comparacion de estadisticas fisicas de la fuente de datos a un
+            texto legible.
+            </summary>
+            <param name="value">Codigo original: 1, 0 o -1.</param>
+            <returns>La comparacion en texto, o <see langword="null"/> si no aplica.</returns>
+        </member>
+        <member name="T:PokemonApi.Application.Features.Pokemon.Dtos.EvolutionResponse">
+            <summary>
+            Evolucion posible a partir de un Pokemon.
+            </summary>
+            <param name="Id">Identificador de la Poke&#x27;dex del Pokemon resultante.</param>
+            <param name="Name">Slug del Pokemon resultante.</param>
+            <param name="DisplayName">Nombre presentable del Pokemon resultante.</param>
+            <param name="OfficialArtwork">URL de la ilustracion del Pokemon resultante.</param>
+            <param name="Requirements">
+            Condiciones que habilitan la evolucion. Puede haber mas de una cuando son
+            alternativas entre si.
+            </param>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Pokemon.Dtos.EvolutionResponse.#ctor(System.Int32,System.String,System.String,System.String,System.Collections.Generic.IReadOnlyList{PokemonApi.Application.Features.Pokemon.Dtos.EvolutionRequirementResponse})">
+            <summary>
+            Evolucion posible a partir de un Pokemon.
+            </summary>
+            <param name="Id">Identificador de la Poke&#x27;dex del Pokemon resultante.</param>
+            <param name="Name">Slug del Pokemon resultante.</param>
+            <param name="DisplayName">Nombre presentable del Pokemon resultante.</param>
+            <param name="OfficialArtwork">URL de la ilustracion del Pokemon resultante.</param>
+            <param name="Requirements">
+            Condiciones que habilitan la evolucion. Puede haber mas de una cuando son
+            alternativas entre si.
+            </param>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.EvolutionResponse.Id">
+            <summary>Identificador de la Poke&#x27;dex del Pokemon resultante.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.EvolutionResponse.Name">
+            <summary>Slug del Pokemon resultante.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.EvolutionResponse.DisplayName">
+            <summary>Nombre presentable del Pokemon resultante.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.EvolutionResponse.OfficialArtwork">
+            <summary>URL de la ilustracion del Pokemon resultante.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.EvolutionResponse.Requirements">
+            <summary>
+            Condiciones que habilitan la evolucion. Puede haber mas de una cuando son
+            alternativas entre si.
+            </summary>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Pokemon.Dtos.EvolutionResponse.FromDomain(PokemonApi.Domain.ValueObjects.Evolution,System.String)">
+            <summary>Convierte una evolucion de dominio en su representacion de API.</summary>
+            <param name="evolution">Evolucion de dominio.</param>
+            <param name="officialArtwork">URL de la ilustracion del Pokemon resultante.</param>
+            <returns>La representacion de API.</returns>
+        </member>
+        <member name="T:PokemonApi.Application.Features.Pokemon.Dtos.PokemonDetailResponse">
+            <summary>
+            Vista completa de un Pokemon.
+            </summary>
+            <param name="Id">Identificador de la Poke&#x27;dex nacional.</param>
+            <param name="Name">Slug canonico del nombre.</param>
+            <param name="DisplayName">Nombre presentable.</param>
+            <param name="Genus">Categoria a la que pertenece.</param>
+            <param name="Description">Descripcion de la Poke&#x27;dex.</param>
+            <param name="Generation">Generacion de pertenencia.</param>
+            <param name="GenerationId">Identificador de la generacion.</param>
+            <param name="Region">Region de pertenencia.</param>
+            <param name="Types">Tipos del Pokemon.</param>
+            <param name="Height">Altura y su unidad.</param>
+            <param name="Weight">Peso y su unidad.</param>
+            <param name="BaseExperience">Experiencia base concedida al ser capturado.</param>
+            <param name="Stats">Estadisticas base de combate.</param>
+            <param name="TotalStats">Suma de las seis estadisticas base.</param>
+            <param name="Abilities">Habilidades que puede poseer.</param>
+            <param name="IsLegendary">Si es legendary.</param>
+            <param name="IsMythical">Si es mythical.</param>
+            <param name="IsBaby">Si es una forma bebe.</param>
+            <param name="CaptureRate">Tasa de captura, de 0 a 255.</param>
+            <param name="BaseHappiness">Felicidad base.</param>
+            <param name="GenderRate">Probabilidad de ser hembra, de 0 a 8. -1 indica genero indeterminado.</param>
+            <param name="HasGenderDifferences">Si su forma hembra difiere visualmente.</param>
+            <param name="HatchCounter">Pasos necesarios para eclosionar del huevo.</param>
+            <param name="GrowthRate">Velocidad de crecimiento.</param>
+            <param name="EggGroups">Grupos de huevo.</param>
+            <param name="Color">Color predominante.</param>
+            <param name="Habitat">Habitat natural, o <see langword="null"/> si no tiene.</param>
+            <param name="Shape">Silueta.</param>
+            <param name="EvolvesFrom">Pokemon del que evoluciona, o <see langword="null"/> si es una forma base.</param>
+            <param name="EvolutionChainId">Identificador de la cadena evolutiva.</param>
+            <param name="EvolvesTo">Evoluciones posibles.</param>
+            <param name="Sprites">Direcciones de las imagenes disponibles.</param>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Pokemon.Dtos.PokemonDetailResponse.#ctor(System.Int32,System.String,System.String,System.String,System.String,System.String,System.Int32,System.String,System.Collections.Generic.IReadOnlyList{System.String},PokemonApi.Application.Features.Pokemon.Dtos.MeasureResponse,PokemonApi.Application.Features.Pokemon.Dtos.MeasureResponse,System.Nullable{System.Int32},PokemonApi.Application.Features.Pokemon.Dtos.StatsResponse,System.Int32,System.Collections.Generic.IReadOnlyList{PokemonApi.Application.Features.Pokemon.Dtos.AbilityResponse},System.Boolean,System.Boolean,System.Boolean,System.Int32,System.Int32,System.Int32,System.Boolean,System.Int32,System.String,System.Collections.Generic.IReadOnlyList{System.String},System.String,System.String,System.String,System.String,System.Int32,System.Collections.Generic.IReadOnlyList{PokemonApi.Application.Features.Pokemon.Dtos.EvolutionResponse},PokemonApi.Application.Features.Pokemon.Dtos.SpritesResponse)">
+            <summary>
+            Vista completa de un Pokemon.
+            </summary>
+            <param name="Id">Identificador de la Poke&#x27;dex nacional.</param>
+            <param name="Name">Slug canonico del nombre.</param>
+            <param name="DisplayName">Nombre presentable.</param>
+            <param name="Genus">Categoria a la que pertenece.</param>
+            <param name="Description">Descripcion de la Poke&#x27;dex.</param>
+            <param name="Generation">Generacion de pertenencia.</param>
+            <param name="GenerationId">Identificador de la generacion.</param>
+            <param name="Region">Region de pertenencia.</param>
+            <param name="Types">Tipos del Pokemon.</param>
+            <param name="Height">Altura y su unidad.</param>
+            <param name="Weight">Peso y su unidad.</param>
+            <param name="BaseExperience">Experiencia base concedida al ser capturado.</param>
+            <param name="Stats">Estadisticas base de combate.</param>
+            <param name="TotalStats">Suma de las seis estadisticas base.</param>
+            <param name="Abilities">Habilidades que puede poseer.</param>
+            <param name="IsLegendary">Si es legendary.</param>
+            <param name="IsMythical">Si es mythical.</param>
+            <param name="IsBaby">Si es una forma bebe.</param>
+            <param name="CaptureRate">Tasa de captura, de 0 a 255.</param>
+            <param name="BaseHappiness">Felicidad base.</param>
+            <param name="GenderRate">Probabilidad de ser hembra, de 0 a 8. -1 indica genero indeterminado.</param>
+            <param name="HasGenderDifferences">Si su forma hembra difiere visualmente.</param>
+            <param name="HatchCounter">Pasos necesarios para eclosionar del huevo.</param>
+            <param name="GrowthRate">Velocidad de crecimiento.</param>
+            <param name="EggGroups">Grupos de huevo.</param>
+            <param name="Color">Color predominante.</param>
+            <param name="Habitat">Habitat natural, o <see langword="null"/> si no tiene.</param>
+            <param name="Shape">Silueta.</param>
+            <param name="EvolvesFrom">Pokemon del que evoluciona, o <see langword="null"/> si es una forma base.</param>
+            <param name="EvolutionChainId">Identificador de la cadena evolutiva.</param>
+            <param name="EvolvesTo">Evoluciones posibles.</param>
+            <param name="Sprites">Direcciones de las imagenes disponibles.</param>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.PokemonDetailResponse.Id">
+            <summary>Identificador de la Poke&#x27;dex nacional.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.PokemonDetailResponse.Name">
+            <summary>Slug canonico del nombre.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.PokemonDetailResponse.DisplayName">
+            <summary>Nombre presentable.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.PokemonDetailResponse.Genus">
+            <summary>Categoria a la que pertenece.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.PokemonDetailResponse.Description">
+            <summary>Descripcion de la Poke&#x27;dex.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.PokemonDetailResponse.Generation">
+            <summary>Generacion de pertenencia.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.PokemonDetailResponse.GenerationId">
+            <summary>Identificador de la generacion.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.PokemonDetailResponse.Region">
+            <summary>Region de pertenencia.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.PokemonDetailResponse.Types">
+            <summary>Tipos del Pokemon.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.PokemonDetailResponse.Height">
+            <summary>Altura y su unidad.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.PokemonDetailResponse.Weight">
+            <summary>Peso y su unidad.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.PokemonDetailResponse.BaseExperience">
+            <summary>Experiencia base concedida al ser capturado.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.PokemonDetailResponse.Stats">
+            <summary>Estadisticas base de combate.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.PokemonDetailResponse.TotalStats">
+            <summary>Suma de las seis estadisticas base.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.PokemonDetailResponse.Abilities">
+            <summary>Habilidades que puede poseer.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.PokemonDetailResponse.IsLegendary">
+            <summary>Si es legendary.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.PokemonDetailResponse.IsMythical">
+            <summary>Si es mythical.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.PokemonDetailResponse.IsBaby">
+            <summary>Si es una forma bebe.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.PokemonDetailResponse.CaptureRate">
+            <summary>Tasa de captura, de 0 a 255.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.PokemonDetailResponse.BaseHappiness">
+            <summary>Felicidad base.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.PokemonDetailResponse.GenderRate">
+            <summary>Probabilidad de ser hembra, de 0 a 8. -1 indica genero indeterminado.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.PokemonDetailResponse.HasGenderDifferences">
+            <summary>Si su forma hembra difiere visualmente.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.PokemonDetailResponse.HatchCounter">
+            <summary>Pasos necesarios para eclosionar del huevo.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.PokemonDetailResponse.GrowthRate">
+            <summary>Velocidad de crecimiento.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.PokemonDetailResponse.EggGroups">
+            <summary>Grupos de huevo.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.PokemonDetailResponse.Color">
+            <summary>Color predominante.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.PokemonDetailResponse.Habitat">
+            <summary>Habitat natural, o <see langword="null"/> si no tiene.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.PokemonDetailResponse.Shape">
+            <summary>Silueta.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.PokemonDetailResponse.EvolvesFrom">
+            <summary>Pokemon del que evoluciona, o <see langword="null"/> si es una forma base.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.PokemonDetailResponse.EvolutionChainId">
+            <summary>Identificador de la cadena evolutiva.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.PokemonDetailResponse.EvolvesTo">
+            <summary>Evoluciones posibles.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.PokemonDetailResponse.Sprites">
+            <summary>Direcciones de las imagenes disponibles.</summary>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Pokemon.Dtos.PokemonDetailResponse.FromDomain(PokemonApi.Domain.Entities.Pokemon,System.Collections.Generic.IReadOnlyDictionary{System.Int32,System.String})">
+            <summary>
+            Convierte una entidad de dominio en su vista completa.
+            </summary>
+            <param name="pokemon">Entidad de dominio.</param>
+            <param name="evolutionArtworks">
+            Ilustraciones de los Pokemon destino de las evoluciones, indexadas por
+            identificador. Se reciben aparte porque el repositorio de evoluciones es
+            quien las conoce y evita un N+1 al construir la respuesta.
+            </param>
+            <returns>La vista completa.</returns>
+        </member>
+        <member name="T:PokemonApi.Application.Features.Pokemon.Dtos.PokemonSummaryResponse">
+            <summary>
+            Vista resumida de un Pokemon, usada en listados y resultados de busqueda.
+            </summary>
+            <remarks>
+            Deliberadamente excluye campos pesados (descripcion, evoluciones, sprites en
+            todos los formatos) para que listar mil Pokemon no exija descargar varios
+            megabytes. El detalle completo se obtiene en <c>GET /api/v1/pokemon/{id}</c>.
+            </remarks>
+            <param name="Id">Identificador de la Poke&#x27;dex nacional.</param>
+            <param name="Name">Slug canonico del nombre.</param>
+            <param name="DisplayName">Nombre presentable.</param>
+            <param name="Types">Tipos del Pokemon.</param>
+            <param name="Generation">Generacion de pertenencia.</param>
+            <param name="GenerationId">Identificador de la generacion.</param>
+            <param name="Region">Region de pertenencia.</param>
+            <param name="TotalStats">Suma de las seis estadisticas base.</param>
+            <param name="IsLegendary">Si es legendary.</param>
+            <param name="IsMythical">Si es mythical.</param>
+            <param name="OfficialArtwork">URL de la ilustracion oficial.</param>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Pokemon.Dtos.PokemonSummaryResponse.#ctor(System.Int32,System.String,System.String,System.Collections.Generic.IReadOnlyList{System.String},System.String,System.Int32,System.String,System.Int32,System.Boolean,System.Boolean,System.String)">
+            <summary>
+            Vista resumida de un Pokemon, usada en listados y resultados de busqueda.
+            </summary>
+            <remarks>
+            Deliberadamente excluye campos pesados (descripcion, evoluciones, sprites en
+            todos los formatos) para que listar mil Pokemon no exija descargar varios
+            megabytes. El detalle completo se obtiene en <c>GET /api/v1/pokemon/{id}</c>.
+            </remarks>
+            <param name="Id">Identificador de la Poke&#x27;dex nacional.</param>
+            <param name="Name">Slug canonico del nombre.</param>
+            <param name="DisplayName">Nombre presentable.</param>
+            <param name="Types">Tipos del Pokemon.</param>
+            <param name="Generation">Generacion de pertenencia.</param>
+            <param name="GenerationId">Identificador de la generacion.</param>
+            <param name="Region">Region de pertenencia.</param>
+            <param name="TotalStats">Suma de las seis estadisticas base.</param>
+            <param name="IsLegendary">Si es legendary.</param>
+            <param name="IsMythical">Si es mythical.</param>
+            <param name="OfficialArtwork">URL de la ilustracion oficial.</param>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.PokemonSummaryResponse.Id">
+            <summary>Identificador de la Poke&#x27;dex nacional.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.PokemonSummaryResponse.Name">
+            <summary>Slug canonico del nombre.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.PokemonSummaryResponse.DisplayName">
+            <summary>Nombre presentable.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.PokemonSummaryResponse.Types">
+            <summary>Tipos del Pokemon.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.PokemonSummaryResponse.Generation">
+            <summary>Generacion de pertenencia.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.PokemonSummaryResponse.GenerationId">
+            <summary>Identificador de la generacion.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.PokemonSummaryResponse.Region">
+            <summary>Region de pertenencia.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.PokemonSummaryResponse.TotalStats">
+            <summary>Suma de las seis estadisticas base.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.PokemonSummaryResponse.IsLegendary">
+            <summary>Si es legendary.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.PokemonSummaryResponse.IsMythical">
+            <summary>Si es mythical.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.Dtos.PokemonSummaryResponse.OfficialArtwork">
+            <summary>URL de la ilustracion oficial.</summary>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Pokemon.Dtos.PokemonSummaryResponse.FromDomain(PokemonApi.Domain.Entities.Pokemon)">
+            <summary>Convierte una entidad de dominio en su vista resumida.</summary>
+            <param name="pokemon">Entidad de dominio.</param>
+            <returns>La vista resumida.</returns>
+        </member>
+        <member name="T:PokemonApi.Application.Features.Pokemon.GetById.GetPokemonByIdQuery">
+            <summary>
+            Peticion para obtener un Pokemon por su identificador de la Poke&#x27;dex.
+            </summary>
+            <param name="Id">Identificador de la Poke&#x27;dex.</param>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Pokemon.GetById.GetPokemonByIdQuery.#ctor(System.Int32)">
+            <summary>
+            Peticion para obtener un Pokemon por su identificador de la Poke&#x27;dex.
+            </summary>
+            <param name="Id">Identificador de la Poke&#x27;dex.</param>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.GetById.GetPokemonByIdQuery.Id">
+            <summary>Identificador de la Poke&#x27;dex.</summary>
+        </member>
+        <member name="T:PokemonApi.Application.Features.Pokemon.GetById.GetPokemonByIdQueryValidator">
+            <summary>
+            Valida <see cref="T:PokemonApi.Application.Features.Pokemon.GetById.GetPokemonByIdQuery"/>.
+            </summary>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Pokemon.GetById.GetPokemonByIdQueryValidator.Validate(PokemonApi.Application.Features.Pokemon.GetById.GetPokemonByIdQuery)">
+            <inheritdoc />
+        </member>
+        <member name="T:PokemonApi.Application.Features.Pokemon.GetById.GetPokemonByIdQueryHandler">
+            <summary>
+            Obtiene un Pokemon por su identificador de la Poke&#x27;dex.
+            </summary>
+            <param name="repository">Repositorio del catalogo.</param>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Pokemon.GetById.GetPokemonByIdQueryHandler.#ctor(PokemonApi.Application.Abstractions.Repositories.IPokemonRepository)">
+            <summary>
+            Obtiene un Pokemon por su identificador de la Poke&#x27;dex.
+            </summary>
+            <param name="repository">Repositorio del catalogo.</param>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Pokemon.GetById.GetPokemonByIdQueryHandler.HandleAsync(PokemonApi.Application.Features.Pokemon.GetById.GetPokemonByIdQuery,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:PokemonApi.Application.Features.Pokemon.GetByName.GetPokemonByNameQuery">
+            <summary>
+            Peticion para obtener un Pokemon por su nombre canonico.
+            </summary>
+            <param name="Name">
+            Nombre del Pokemon. Se normaliza antes de buscar, de modo que
+            <c>Pikachu</c>, <c>PIKACHU</c> y <c>Mr. Mime</c> funcionan igual que sus
+            formas canonicas.
+            </param>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Pokemon.GetByName.GetPokemonByNameQuery.#ctor(System.String)">
+            <summary>
+            Peticion para obtener un Pokemon por su nombre canonico.
+            </summary>
+            <param name="Name">
+            Nombre del Pokemon. Se normaliza antes de buscar, de modo que
+            <c>Pikachu</c>, <c>PIKACHU</c> y <c>Mr. Mime</c> funcionan igual que sus
+            formas canonicas.
+            </param>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.GetByName.GetPokemonByNameQuery.Name">
+            <summary>
+            Nombre del Pokemon. Se normaliza antes de buscar, de modo que
+            <c>Pikachu</c>, <c>PIKACHU</c> y <c>Mr. Mime</c> funcionan igual que sus
+            formas canonicas.
+            </summary>
+        </member>
+        <member name="T:PokemonApi.Application.Features.Pokemon.GetByName.GetPokemonByNameQueryValidator">
+            <summary>
+            Valida <see cref="T:PokemonApi.Application.Features.Pokemon.GetByName.GetPokemonByNameQuery"/>.
+            </summary>
+        </member>
+        <member name="F:PokemonApi.Application.Features.Pokemon.GetByName.GetPokemonByNameQueryValidator.MaxNameLength">
+            <summary>Longitud maxima admitida para un nombre.</summary>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Pokemon.GetByName.GetPokemonByNameQueryValidator.Validate(PokemonApi.Application.Features.Pokemon.GetByName.GetPokemonByNameQuery)">
+            <inheritdoc />
+        </member>
+        <member name="T:PokemonApi.Application.Features.Pokemon.GetByName.GetPokemonByNameQueryHandler">
+            <summary>
+            Obtiene un Pokemon por su nombre canonico.
+            </summary>
+            <param name="repository">Repositorio del catalogo.</param>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Pokemon.GetByName.GetPokemonByNameQueryHandler.#ctor(PokemonApi.Application.Abstractions.Repositories.IPokemonRepository)">
+            <summary>
+            Obtiene un Pokemon por su nombre canonico.
+            </summary>
+            <param name="repository">Repositorio del catalogo.</param>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Pokemon.GetByName.GetPokemonByNameQueryHandler.HandleAsync(PokemonApi.Application.Features.Pokemon.GetByName.GetPokemonByNameQuery,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:PokemonApi.Application.Features.Pokemon.GetEvolutionChain.GetEvolutionChainQuery">
+            <summary>
+            Peticion para obtener la cadena evolutiva completa de un Pokemon.
+            </summary>
+            <param name="Name">Slug canonico del nombre del Pokemon.</param>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Pokemon.GetEvolutionChain.GetEvolutionChainQuery.#ctor(System.String)">
+            <summary>
+            Peticion para obtener la cadena evolutiva completa de un Pokemon.
+            </summary>
+            <param name="Name">Slug canonico del nombre del Pokemon.</param>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.GetEvolutionChain.GetEvolutionChainQuery.Name">
+            <summary>Slug canonico del nombre del Pokemon.</summary>
+        </member>
+        <member name="T:PokemonApi.Application.Features.Pokemon.GetEvolutionChain.GetEvolutionChainQueryValidator">
+            <summary>
+            Valida <see cref="T:PokemonApi.Application.Features.Pokemon.GetEvolutionChain.GetEvolutionChainQuery"/>.
+            </summary>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Pokemon.GetEvolutionChain.GetEvolutionChainQueryValidator.Validate(PokemonApi.Application.Features.Pokemon.GetEvolutionChain.GetEvolutionChainQuery)">
+            <inheritdoc />
+        </member>
+        <member name="T:PokemonApi.Application.Features.Pokemon.GetEvolutionChain.EvolutionChainMemberResponse">
+            <summary>
+            Miembro de una cadena evolutiva: un Pokemon y su posicion dentro de ella.
+            </summary>
+            <param name="Id">Identificador de la Poke&#x27;dex del Pokemon.</param>
+            <param name="Name">Slug canonico del nombre.</param>
+            <param name="DisplayName">Nombre presentable.</param>
+            <param name="OfficialArtwork">URL de la ilustracion oficial.</param>
+            <param name="EvolutionOrder">
+            Posicion dentro de la cadena, empezando en 0 para la forma base.
+            </param>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Pokemon.GetEvolutionChain.EvolutionChainMemberResponse.#ctor(System.Int32,System.String,System.String,System.String,System.Int32)">
+            <summary>
+            Miembro de una cadena evolutiva: un Pokemon y su posicion dentro de ella.
+            </summary>
+            <param name="Id">Identificador de la Poke&#x27;dex del Pokemon.</param>
+            <param name="Name">Slug canonico del nombre.</param>
+            <param name="DisplayName">Nombre presentable.</param>
+            <param name="OfficialArtwork">URL de la ilustracion oficial.</param>
+            <param name="EvolutionOrder">
+            Posicion dentro de la cadena, empezando en 0 para la forma base.
+            </param>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.GetEvolutionChain.EvolutionChainMemberResponse.Id">
+            <summary>Identificador de la Poke&#x27;dex del Pokemon.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.GetEvolutionChain.EvolutionChainMemberResponse.Name">
+            <summary>Slug canonico del nombre.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.GetEvolutionChain.EvolutionChainMemberResponse.DisplayName">
+            <summary>Nombre presentable.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.GetEvolutionChain.EvolutionChainMemberResponse.OfficialArtwork">
+            <summary>URL de la ilustracion oficial.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.GetEvolutionChain.EvolutionChainMemberResponse.EvolutionOrder">
+            <summary>
+            Posicion dentro de la cadena, empezando en 0 para la forma base.
+            </summary>
+        </member>
+        <member name="T:PokemonApi.Application.Features.Pokemon.GetEvolutionChain.EvolutionChainResponse">
+            <summary>
+            Cadena evolutiva completa.
+            </summary>
+            <param name="ChainId">Identificador de la cadena.</param>
+            <param name="RootName">Slug de la forma base de la cadena.</param>
+            <param name="Members">Pokemon que componen la cadena, de la forma base a la final.</param>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Pokemon.GetEvolutionChain.EvolutionChainResponse.#ctor(System.Int32,System.String,System.Collections.Generic.IReadOnlyList{PokemonApi.Application.Features.Pokemon.GetEvolutionChain.EvolutionChainMemberResponse})">
+            <summary>
+            Cadena evolutiva completa.
+            </summary>
+            <param name="ChainId">Identificador de la cadena.</param>
+            <param name="RootName">Slug de la forma base de la cadena.</param>
+            <param name="Members">Pokemon que componen la cadena, de la forma base a la final.</param>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.GetEvolutionChain.EvolutionChainResponse.ChainId">
+            <summary>Identificador de la cadena.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.GetEvolutionChain.EvolutionChainResponse.RootName">
+            <summary>Slug de la forma base de la cadena.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.GetEvolutionChain.EvolutionChainResponse.Members">
+            <summary>Pokemon que componen la cadena, de la forma base a la final.</summary>
+        </member>
+        <member name="T:PokemonApi.Application.Features.Pokemon.GetEvolutionChain.GetEvolutionChainQueryHandler">
+            <summary>
+            Obtiene la cadena evolutiva de un Pokemon.
+            </summary>
+            <param name="repository">Repositorio del catalogo.</param>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Pokemon.GetEvolutionChain.GetEvolutionChainQueryHandler.#ctor(PokemonApi.Application.Abstractions.Repositories.IPokemonRepository)">
+            <summary>
+            Obtiene la cadena evolutiva de un Pokemon.
+            </summary>
+            <param name="repository">Repositorio del catalogo.</param>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Pokemon.GetEvolutionChain.GetEvolutionChainQueryHandler.HandleAsync(PokemonApi.Application.Features.Pokemon.GetEvolutionChain.GetEvolutionChainQuery,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:PokemonApi.Application.Features.Pokemon.GetEvolutionChain.GetEvolutionChainQueryHandler.BuildEvolutionOrder(System.Collections.Generic.IReadOnlyList{PokemonApi.Domain.Entities.Pokemon},PokemonApi.Domain.Entities.Pokemon)">
+            <summary>
+            Calcula la profundidad de cada miembro de la cadena mediante un recorrido
+            en anchura desde la forma base.
+            </summary>
+            <param name="chain">Miembros de la cadena.</param>
+            <param name="baseForm">Miembro sin antecesor, desde el que arranca el recorrido.</param>
+            <returns>Profundidad de cada Pokemon, indexada por identificador.</returns>
+        </member>
+        <member name="T:PokemonApi.Application.Features.Pokemon.List.ListPokemonCatalogValidator">
+            <summary>
+            Valida los filtros de <see cref="T:PokemonApi.Application.Features.Pokemon.List.ListPokemonQuery"/> que dependen del
+            catalogo.
+            </summary>
+            <remarks>
+            <para>
+            Un tipo, una habilidad o una generacion solo existen si aparecen en los
+            datos, asi que comprobarlos exige consultar el catalogo. Esa comprobacion no
+            cabe en un <see cref="T:PokemonApi.Application.Common.Validation.IValidator`1"/> sincrono, y por eso se ejecuta
+            como <see cref="T:PokemonApi.Application.Common.Validation.IAsyncValidator`1"/>.
+            </para>
+            <para>
+            Vive en la cadena de validacion, y no solo en el builder, por una razon que
+            el cliente percibe: si un 400 no puede reunir a la vez los errores
+            estructurales y los de catalogo, un <c>page=0</c> junto a un
+            <c>types=plastic</c> obligaria a descubrir los problemas de uno en uno. Al
+            ejecutarse ambas fases siempre, un unico 400 nombra todos los campos que
+            corregir.
+            </para>
+            <para>
+            Las reglas no se duplican: se delegan en
+            <see cref="M:PokemonApi.Application.Features.Pokemon.List.PokemonSearchQueryBuilder.ValidateAsync(PokemonApi.Application.Features.Pokemon.List.ListPokemonQuery,System.Threading.CancellationToken)"/>, que es el unico sitio
+            donde se decide que valores de catalogo admite cada filtro.
+            </para>
+            </remarks>
+            <param name="queryBuilder">Traductor de la peticion, que conoce el catalogo.</param>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Pokemon.List.ListPokemonCatalogValidator.#ctor(PokemonApi.Application.Features.Pokemon.List.PokemonSearchQueryBuilder)">
+            <summary>
+            Valida los filtros de <see cref="T:PokemonApi.Application.Features.Pokemon.List.ListPokemonQuery"/> que dependen del
+            catalogo.
+            </summary>
+            <remarks>
+            <para>
+            Un tipo, una habilidad o una generacion solo existen si aparecen en los
+            datos, asi que comprobarlos exige consultar el catalogo. Esa comprobacion no
+            cabe en un <see cref="T:PokemonApi.Application.Common.Validation.IValidator`1"/> sincrono, y por eso se ejecuta
+            como <see cref="T:PokemonApi.Application.Common.Validation.IAsyncValidator`1"/>.
+            </para>
+            <para>
+            Vive en la cadena de validacion, y no solo en el builder, por una razon que
+            el cliente percibe: si un 400 no puede reunir a la vez los errores
+            estructurales y los de catalogo, un <c>page=0</c> junto a un
+            <c>types=plastic</c> obligaria a descubrir los problemas de uno en uno. Al
+            ejecutarse ambas fases siempre, un unico 400 nombra todos los campos que
+            corregir.
+            </para>
+            <para>
+            Las reglas no se duplican: se delegan en
+            <see cref="M:PokemonApi.Application.Features.Pokemon.List.PokemonSearchQueryBuilder.ValidateAsync(PokemonApi.Application.Features.Pokemon.List.ListPokemonQuery,System.Threading.CancellationToken)"/>, que es el unico sitio
+            donde se decide que valores de catalogo admite cada filtro.
+            </para>
+            </remarks>
+            <param name="queryBuilder">Traductor de la peticion, que conoce el catalogo.</param>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Pokemon.List.ListPokemonCatalogValidator.ValidateAsync(PokemonApi.Application.Features.Pokemon.List.ListPokemonQuery,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:PokemonApi.Application.Features.Pokemon.List.ListPokemonQuery">
+            <summary>
+            Peticion para listar Pokemon con filtros, orden y paginacion.
+            </summary>
+            <remarks>
+            Todos los filtros son opcionales. Un filtro multiplojo se expresa separado
+            por comas (<c>types=fire,water</c>) o repitiendo el parametro
+            (<c>types=fire&amp;types=water</c>), y se interpreta como "OR" dentro del
+            campo; entre campos distintos se combinan con "AND".
+            <para>
+            Los campos que Closed World admiten (rareza, estadistica, orden y sentido)
+            viajan como texto y se interpretan sin distinguir mayusculas: el framework
+            solo enlaza los <see langword="enum"/> respetando el caso exacto del nombre
+            del miembro, lo que obligaria al cliente a escribir
+            <c>?sortBy=TotalStats</c>. Aceptarlos como texto devuelve ademas un mensaje
+            de error que enumera los valores validos.
+            </para>
+            </remarks>
+            <param name="Name">Fragmento del nombre.</param>
+            <param name="Types">Tipos que el Pokemon debe tener.</param>
+            <param name="Abilities">Habilidades que el Pokemon debe tener.</param>
+            <param name="Generation">
+            Generacion de pertenencia. Acepta tanto el numero (<c>3</c>) como el slug
+            (<c>generation-iii</c>).
+            </param>
+            <param name="Generations">Generaciones de pertenencia admitidas, con el mismo formato.</param>
+            <param name="Regions">Regiones de pertenencia admitidas.</param>
+            <param name="EggGroups">Grupos de huevo.</param>
+            <param name="Habitats">Habitats naturales.</param>
+            <param name="Rarity">Rareza: <c>common</c>, <c>legendary</c> o <c>mythical</c>.</param>
+            <param name="MinHeight">Altura minima.</param>
+            <param name="MaxHeight">Altura maxima.</param>
+            <param name="MinWeight">Peso minimo.</param>
+            <param name="MaxWeight">Peso maximo.</param>
+            <param name="MinBaseExperience">Experiencia base minima.</param>
+            <param name="MinTotalStats">Suma de estadisticas minima.</param>
+            <param name="MaxTotalStats">Suma de estadisticas maxima.</param>
+            <param name="MinStat">
+            Estadistica que debe alcanzar un valor minimo: <c>hp</c>, <c>attack</c>,
+            <c>defense</c>, <c>specialAttack</c>, <c>specialDefense</c> o <c>speed</c>.
+            </param>
+            <param name="MinStatValue">Valor minimo de <paramref name="MinStat"/>.</param>
+            <param name="SortBy">
+            Campo de ordenamiento: <c>id</c>, <c>name</c>, <c>height</c>, <c>weight</c>,
+            <c>totalStats</c> o <c>baseExperience</c>.
+            </param>
+            <param name="SortDirection">
+            Sentido del ordenamiento: <c>asc</c> o <c>desc</c>. Tambien se aceptan los
+            nombres largos <c>ascending</c> y <c>descending</c>.
+            </param>
+            <param name="Page">Pagina solicitada.</param>
+            <param name="PageSize">Cantidad de elementos por pagina.</param>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Pokemon.List.ListPokemonQuery.#ctor(System.String,System.String[],System.String[],System.String,System.String[],System.String[],System.String[],System.String[],System.String,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Int32},System.Nullable{System.Int32},System.Nullable{System.Int32},System.String,System.Nullable{System.Int32},System.String,System.String,System.Nullable{System.Int32},System.Nullable{System.Int32})">
+            <summary>
+            Peticion para listar Pokemon con filtros, orden y paginacion.
+            </summary>
+            <remarks>
+            Todos los filtros son opcionales. Un filtro multiplojo se expresa separado
+            por comas (<c>types=fire,water</c>) o repitiendo el parametro
+            (<c>types=fire&amp;types=water</c>), y se interpreta como "OR" dentro del
+            campo; entre campos distintos se combinan con "AND".
+            <para>
+            Los campos que Closed World admiten (rareza, estadistica, orden y sentido)
+            viajan como texto y se interpretan sin distinguir mayusculas: el framework
+            solo enlaza los <see langword="enum"/> respetando el caso exacto del nombre
+            del miembro, lo que obligaria al cliente a escribir
+            <c>?sortBy=TotalStats</c>. Aceptarlos como texto devuelve ademas un mensaje
+            de error que enumera los valores validos.
+            </para>
+            </remarks>
+            <param name="Name">Fragmento del nombre.</param>
+            <param name="Types">Tipos que el Pokemon debe tener.</param>
+            <param name="Abilities">Habilidades que el Pokemon debe tener.</param>
+            <param name="Generation">
+            Generacion de pertenencia. Acepta tanto el numero (<c>3</c>) como el slug
+            (<c>generation-iii</c>).
+            </param>
+            <param name="Generations">Generaciones de pertenencia admitidas, con el mismo formato.</param>
+            <param name="Regions">Regiones de pertenencia admitidas.</param>
+            <param name="EggGroups">Grupos de huevo.</param>
+            <param name="Habitats">Habitats naturales.</param>
+            <param name="Rarity">Rareza: <c>common</c>, <c>legendary</c> o <c>mythical</c>.</param>
+            <param name="MinHeight">Altura minima.</param>
+            <param name="MaxHeight">Altura maxima.</param>
+            <param name="MinWeight">Peso minimo.</param>
+            <param name="MaxWeight">Peso maximo.</param>
+            <param name="MinBaseExperience">Experiencia base minima.</param>
+            <param name="MinTotalStats">Suma de estadisticas minima.</param>
+            <param name="MaxTotalStats">Suma de estadisticas maxima.</param>
+            <param name="MinStat">
+            Estadistica que debe alcanzar un valor minimo: <c>hp</c>, <c>attack</c>,
+            <c>defense</c>, <c>specialAttack</c>, <c>specialDefense</c> o <c>speed</c>.
+            </param>
+            <param name="MinStatValue">Valor minimo de <paramref name="MinStat"/>.</param>
+            <param name="SortBy">
+            Campo de ordenamiento: <c>id</c>, <c>name</c>, <c>height</c>, <c>weight</c>,
+            <c>totalStats</c> o <c>baseExperience</c>.
+            </param>
+            <param name="SortDirection">
+            Sentido del ordenamiento: <c>asc</c> o <c>desc</c>. Tambien se aceptan los
+            nombres largos <c>ascending</c> y <c>descending</c>.
+            </param>
+            <param name="Page">Pagina solicitada.</param>
+            <param name="PageSize">Cantidad de elementos por pagina.</param>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.List.ListPokemonQuery.Name">
+            <summary>Fragmento del nombre.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.List.ListPokemonQuery.Types">
+            <summary>Tipos que el Pokemon debe tener.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.List.ListPokemonQuery.Abilities">
+            <summary>Habilidades que el Pokemon debe tener.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.List.ListPokemonQuery.Generation">
+            <summary>
+            Generacion de pertenencia. Acepta tanto el numero (<c>3</c>) como el slug
+            (<c>generation-iii</c>).
+            </summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.List.ListPokemonQuery.Generations">
+            <summary>Generaciones de pertenencia admitidas, con el mismo formato.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.List.ListPokemonQuery.Regions">
+            <summary>Regiones de pertenencia admitidas.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.List.ListPokemonQuery.EggGroups">
+            <summary>Grupos de huevo.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.List.ListPokemonQuery.Habitats">
+            <summary>Habitats naturales.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.List.ListPokemonQuery.Rarity">
+            <summary>Rareza: <c>common</c>, <c>legendary</c> o <c>mythical</c>.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.List.ListPokemonQuery.MinHeight">
+            <summary>Altura minima.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.List.ListPokemonQuery.MaxHeight">
+            <summary>Altura maxima.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.List.ListPokemonQuery.MinWeight">
+            <summary>Peso minimo.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.List.ListPokemonQuery.MaxWeight">
+            <summary>Peso maximo.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.List.ListPokemonQuery.MinBaseExperience">
+            <summary>Experiencia base minima.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.List.ListPokemonQuery.MinTotalStats">
+            <summary>Suma de estadisticas minima.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.List.ListPokemonQuery.MaxTotalStats">
+            <summary>Suma de estadisticas maxima.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.List.ListPokemonQuery.MinStat">
+            <summary>
+            Estadistica que debe alcanzar un valor minimo: <c>hp</c>, <c>attack</c>,
+            <c>defense</c>, <c>specialAttack</c>, <c>specialDefense</c> o <c>speed</c>.
+            </summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.List.ListPokemonQuery.MinStatValue">
+            <summary>Valor minimo de <paramref name="MinStat"/>.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.List.ListPokemonQuery.SortBy">
+            <summary>
+            Campo de ordenamiento: <c>id</c>, <c>name</c>, <c>height</c>, <c>weight</c>,
+            <c>totalStats</c> o <c>baseExperience</c>.
+            </summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.List.ListPokemonQuery.SortDirection">
+            <summary>
+            Sentido del ordenamiento: <c>asc</c> o <c>desc</c>. Tambien se aceptan los
+            nombres largos <c>ascending</c> y <c>descending</c>.
+            </summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.List.ListPokemonQuery.Page">
+            <summary>Pagina solicitada.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.List.ListPokemonQuery.PageSize">
+            <summary>Cantidad de elementos por pagina.</summary>
+        </member>
+        <member name="T:PokemonApi.Application.Features.Pokemon.List.ListPokemonLimits">
+            <summary>
+            Limites de paginacion aplicados a <see cref="T:PokemonApi.Application.Features.Pokemon.List.ListPokemonQuery"/>.
+            </summary>
+        </member>
+        <member name="F:PokemonApi.Application.Features.Pokemon.List.ListPokemonLimits.DefaultPage">
+            <summary>Numero de pagina por defecto.</summary>
+        </member>
+        <member name="F:PokemonApi.Application.Features.Pokemon.List.ListPokemonLimits.DefaultPageSize">
+            <summary>Cantidad de elementos por pagina cuando el cliente no indica.</summary>
+        </member>
+        <member name="F:PokemonApi.Application.Features.Pokemon.List.ListPokemonLimits.MaxPageSize">
+            <summary>Tope maximo de elementos por pagina, decidido por el servidor.</summary>
+        </member>
+        <member name="F:PokemonApi.Application.Features.Pokemon.List.ListPokemonLimits.MaxSearchLength">
+            <summary>Longitud maxima del fragmento de busqueda por nombre.</summary>
+        </member>
+        <member name="F:PokemonApi.Application.Features.Pokemon.List.ListPokemonLimits.MaxHeightInMetres">
+            <summary>Altura maxima admitida en metros.</summary>
+        </member>
+        <member name="F:PokemonApi.Application.Features.Pokemon.List.ListPokemonLimits.MaxWeightInKilograms">
+            <summary>Peso maximo admitido en kilogramos.</summary>
+        </member>
+        <member name="T:PokemonApi.Application.Features.Pokemon.List.ListPokemonQueryHandler">
+            <summary>
+            Lista Pokemon aplicando filtros, orden y paginacion.
+            </summary>
+            <param name="repository">Repositorio del catalogo.</param>
+            <param name="queryBuilder">Traduce la peticion a un filtro de dominio.</param>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Pokemon.List.ListPokemonQueryHandler.#ctor(PokemonApi.Application.Abstractions.Repositories.IPokemonRepository,PokemonApi.Application.Features.Pokemon.List.PokemonSearchQueryBuilder)">
+            <summary>
+            Lista Pokemon aplicando filtros, orden y paginacion.
+            </summary>
+            <param name="repository">Repositorio del catalogo.</param>
+            <param name="queryBuilder">Traduce la peticion a un filtro de dominio.</param>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Pokemon.List.ListPokemonQueryHandler.HandleAsync(PokemonApi.Application.Features.Pokemon.List.ListPokemonQuery,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:PokemonApi.Application.Features.Pokemon.List.ListPokemonQueryValidator">
+            <summary>
+            Valida los parametros de <see cref="T:PokemonApi.Application.Features.Pokemon.List.ListPokemonQuery"/>.
+            </summary>
+            <remarks>
+            Los filtros de tipo, generacion, region, etc. se validan contra el catalogo
+            en el handler, porque alli se dispone del listado real de valores validos.
+            Aqui solo se comprueban las invariantes que no dependen de los datos.
+            </remarks>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Pokemon.List.ListPokemonQueryValidator.Validate(PokemonApi.Application.Features.Pokemon.List.ListPokemonQuery)">
+            <inheritdoc />
+        </member>
+        <member name="T:PokemonApi.Application.Features.Pokemon.List.PokemonSearchQueryBuilder">
+            <summary>
+            Aplica los filtros de <see cref="T:PokemonApi.Application.Features.Pokemon.List.ListPokemonQuery"/> sobre el catalogo.
+            </summary>
+            <remarks>
+            Este servicio es el unico lugar donde se decide como se traducen los
+            parametros de la peticion a la representacion interna del catalogo: la altura
+            se pide en metros pero el dominio la almacena en decimetros, y los filtros de
+            catalogo se validan contra los valores realmente presentes en los datos.
+            El handler queda reducido a orquestar la llamada.
+            </remarks>
+            <param name="catalog">Catalogo de tipos, generaciones, habilidades y habitats validos.</param>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Pokemon.List.PokemonSearchQueryBuilder.#ctor(PokemonApi.Application.Abstractions.Repositories.ICatalogRepository)">
+            <summary>
+            Aplica los filtros de <see cref="T:PokemonApi.Application.Features.Pokemon.List.ListPokemonQuery"/> sobre el catalogo.
+            </summary>
+            <remarks>
+            Este servicio es el unico lugar donde se decide como se traducen los
+            parametros de la peticion a la representacion interna del catalogo: la altura
+            se pide en metros pero el dominio la almacena en decimetros, y los filtros de
+            catalogo se validan contra los valores realmente presentes en los datos.
+            El handler queda reducido a orquestar la llamada.
+            </remarks>
+            <param name="catalog">Catalogo de tipos, generaciones, habilidades y habitats validos.</param>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Pokemon.List.PokemonSearchQueryBuilder.ValidateAsync(PokemonApi.Application.Features.Pokemon.List.ListPokemonQuery,System.Threading.CancellationToken)">
+            <summary>
+            Comprueba los filtros que dependen del catalogo sin traducir la peticion.
+            </summary>
+            <remarks>
+            Se expone como <see cref="T:PokemonApi.Application.Common.Validation.IAsyncValidator`1"/> para que un cliente
+            que Combine un filtro de catalogo con un error de paginacion reciba los
+            dos en el mismo 400. Comparte toda la logica con
+            <see cref="M:PokemonApi.Application.Features.Pokemon.List.PokemonSearchQueryBuilder.BuildAsync(PokemonApi.Application.Features.Pokemon.List.ListPokemonQuery,System.Threading.CancellationToken)"/>: si las reglas estuvieran en dos sitios, un
+            filtro podria aceptarse al validar y rechazarse al traducir.
+            </remarks>
+            <param name="request">Peticion del cliente.</param>
+            <param name="cancellationToken">Token de cancelacion.</param>
+            <returns>Los fallos indexados por nombre de campo; vacio si la peticion es valida.</returns>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Pokemon.List.PokemonSearchQueryBuilder.BuildAsync(PokemonApi.Application.Features.Pokemon.List.ListPokemonQuery,System.Threading.CancellationToken)">
+            <summary>
+            Traduce la peticion del cliente a un <see cref="T:PokemonApi.Application.Common.Queries.PokemonSearchQuery"/>
+            normalizado, rechazando los valores de catalogo desconocidos.
+            </summary>
+            <param name="request">Peticion del cliente.</param>
+            <param name="cancellationToken">Token de cancelacion.</param>
+            <returns>La consulta normalizada.</returns>
+            <exception cref="T:PokemonApi.Application.Common.Validation.ValidationException">
+            Si algun filtro no cumple las reglas del validador o usa un valor que no
+            existe en el catalogo. Los mensajes llegan al cliente en el
+            <c>ProblemDetails</c>, indexados por nombre de campo.
+            </exception>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Pokemon.List.PokemonSearchQueryBuilder.ResolveAsync(PokemonApi.Application.Features.Pokemon.List.ListPokemonQuery,System.Threading.CancellationToken)">
+            <summary>
+            Resuelve todos los filtros contra el catalogo y anota los desconocidos.
+            </summary>
+            <remarks>
+            No falla nunca: devuelve los valores interpreted y, en paralelo, los
+            errores encontrados. Quien llama decide que hacer con ellos, que es lo que
+            permite usar la misma resolucion tanto para validar como para construir la
+            consulta.
+            </remarks>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Pokemon.List.PokemonSearchQueryBuilder.ParseSortDirection(System.String,System.Collections.Generic.Dictionary{System.String,System.String[]})">
+            <summary>
+            Interpreta el sentido de ordenamiento admitiendo las abreviaturas
+            habituales <c>asc</c> y <c>desc</c>.
+            </summary>
+            <remarks>
+            Los nombres del enumerado (<c>Ascending</c> y <c>Descending</c>) no son lo
+            que un cliente espera escribir en una cadena de consulta, y <c>desc</c> no
+            llegaria ni a interpretarse como abreviatura. Se aceptan las dos formas.
+            </remarks>
+            <param name="raw">Valor recibido del cliente.</param>
+            <param name="failures">Errores acumulados.</param>
+            <returns>El sentido interpretado, o <see langword="null"/> si falta o no es valido.</returns>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Pokemon.List.PokemonSearchQueryBuilder.ParseEnum``1(System.String,System.String,System.Collections.Generic.Dictionary{System.String,System.String[]})">
+            <summary>
+            Interpreta un valor de <see cref="T:System.Enum"/> recibido como texto, sin
+            distinguir mayusculas, guiones bajos ni guiones, y anota el error si no
+            existe.
+            </summary>
+            <remarks>
+            Los separadores se ignoran porque el cliente escribe estos campos en una
+            cadena de consulta, donde <c>specialAttack</c>, <c>special_attack</c> y
+            <c>special-attack</c> designan lo mismo y solo la primera forma es la que
+            publica el catalogo de Swagger.
+            </remarks>
+            <typeparam name="TEnum">Conjunto de valores admitidos.</typeparam>
+            <param name="raw">Valor recibido del cliente.</param>
+            <param name="fieldName">Nombre del campo, usado en el mensaje de error.</param>
+            <param name="failures">Errores acumulados.</param>
+            <returns>El valor interpretado, o <see langword="null"/> si falta o no es valido.</returns>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Pokemon.List.PokemonSearchQueryBuilder.ResolveSlugsAsync(System.String[],System.Lazy{System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlySet{System.String}}},System.String,System.Collections.Generic.Dictionary{System.String,System.String[]})">
+            <summary>
+            Normaliza y valida una lista de slugs contra el conjunto de valores
+            admitidos por un filtro, anotando los desconocidos en
+            <paramref name="failures"/>.
+            </summary>
+            <remarks>
+            Acepta las dos sintaxis que anuncia la documentacion: el parametro
+            repetido (<c>types=fire&amp;types=water</c>, que el framework ya entrega
+            separado) y los valores unidos por comas (<c>types=fire,water</c>), que
+            llegan como un unico elemento y hay que desglosar.
+            </remarks>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Pokemon.List.PokemonSearchQueryBuilder.ResolveGenerationIdsAsync(PokemonApi.Application.Features.Pokemon.List.ListPokemonQuery,System.Collections.Generic.Dictionary{System.String,System.String[]})">
+            <summary>
+            Resuelve <c>generation</c> y <c>generations</c> a identificadores,
+            admitiendo tanto el numero (<c>3</c>) como el slug (<c>generation-iii</c>).
+            </summary>
+        </member>
+        <member name="T:PokemonApi.Application.Features.Pokemon.List.PokemonSearchQueryBuilder.Resolution">
+            <summary>
+            Valores de los filtros ya interpretados contra el catalogo.
+            </summary>
+            <param name="Types">Slugs de tipo admitidos.</param>
+            <param name="Abilities">Slugs de habilidad admitidos.</param>
+            <param name="Regions">Slugs de region admitidos.</param>
+            <param name="EggGroups">Slugs de grupo de huevos admitidos.</param>
+            <param name="Habitats">Slugs de habitat admitidos.</param>
+            <param name="GenerationIds">Generaciones seleccionadas.</param>
+            <param name="Rarity">Rareza interpretada, si se envio.</param>
+            <param name="MinStat">Estadistica minima interpretada, si se envio.</param>
+            <param name="SortBy">Campo de orden interpretado, si se envio.</param>
+            <param name="SortDirection">Sentido de orden interpretado, si se envio.</param>
+            <remarks>
+            Todos los campos admiten <see langword="null"/>, que significa "filtro no
+            solicitado" y no "filtro vacio": un valor desconocido tambien produce
+            <see langword="null"/>, pero acompañado de su error en
+            <c>Failures</c>.
+            </remarks>
+        </member>
+        <member name="M:PokemonApi.Application.Features.Pokemon.List.PokemonSearchQueryBuilder.Resolution.#ctor(System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyList{System.Int32},System.Nullable{PokemonApi.Domain.Enumerations.PokemonRarity},System.Nullable{PokemonApi.Domain.Enumerations.PokemonStat},System.Nullable{PokemonApi.Domain.Enumerations.PokemonSortField},System.Nullable{PokemonApi.Domain.Enumerations.SortDirection})">
+            <summary>
+            Valores de los filtros ya interpretados contra el catalogo.
+            </summary>
+            <param name="Types">Slugs de tipo admitidos.</param>
+            <param name="Abilities">Slugs de habilidad admitidos.</param>
+            <param name="Regions">Slugs de region admitidos.</param>
+            <param name="EggGroups">Slugs de grupo de huevos admitidos.</param>
+            <param name="Habitats">Slugs de habitat admitidos.</param>
+            <param name="GenerationIds">Generaciones seleccionadas.</param>
+            <param name="Rarity">Rareza interpretada, si se envio.</param>
+            <param name="MinStat">Estadistica minima interpretada, si se envio.</param>
+            <param name="SortBy">Campo de orden interpretado, si se envio.</param>
+            <param name="SortDirection">Sentido de orden interpretado, si se envio.</param>
+            <remarks>
+            Todos los campos admiten <see langword="null"/>, que significa "filtro no
+            solicitado" y no "filtro vacio": un valor desconocido tambien produce
+            <see langword="null"/>, pero acompañado de su error en
+            <c>Failures</c>.
+            </remarks>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.List.PokemonSearchQueryBuilder.Resolution.Types">
+            <summary>Slugs de tipo admitidos.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.List.PokemonSearchQueryBuilder.Resolution.Abilities">
+            <summary>Slugs de habilidad admitidos.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.List.PokemonSearchQueryBuilder.Resolution.Regions">
+            <summary>Slugs de region admitidos.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.List.PokemonSearchQueryBuilder.Resolution.EggGroups">
+            <summary>Slugs de grupo de huevos admitidos.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.List.PokemonSearchQueryBuilder.Resolution.Habitats">
+            <summary>Slugs de habitat admitidos.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.List.PokemonSearchQueryBuilder.Resolution.GenerationIds">
+            <summary>Generaciones seleccionadas.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.List.PokemonSearchQueryBuilder.Resolution.Rarity">
+            <summary>Rareza interpretada, si se envio.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.List.PokemonSearchQueryBuilder.Resolution.MinStat">
+            <summary>Estadistica minima interpretada, si se envio.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.List.PokemonSearchQueryBuilder.Resolution.SortBy">
+            <summary>Campo de orden interpretado, si se envio.</summary>
+        </member>
+        <member name="P:PokemonApi.Application.Features.Pokemon.List.PokemonSearchQueryBuilder.Resolution.SortDirection">
+            <summary>Sentido de orden interpretado, si se envio.</summary>
+        </member>
+    </members>
+</doc>
