@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Capa de dominio: modelo de negocio puro.
+    No depende de ninguna otra capa ni de frameworks externos (ASP.NET, EF Core).
+  -->
+
+  <PropertyGroup>
+    <RootNamespace>PokemonApi.Domain</RootNamespace>
+    <AssemblyName>PokemonApi.Domain</AssemblyName>
+  </PropertyGroup>
+
+</Project>

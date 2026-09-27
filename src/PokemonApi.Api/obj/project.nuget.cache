@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "dgSpecHash": "qjRphb7l80g=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\ramge\\OneDrive\\Documents\\Proyectos\\pokemon-api\\src\\PokemonApi.Api\\PokemonApi.Api.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\ramge\\.nuget\\packages\\microsoft.aspnetcore.openapi\\9.0.0\\microsoft.aspnetcore.openapi.9.0.0.nupkg.sha512",
+    "C:\\Users\\ramge\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\9.0.5\\microsoft.extensions.dependencyinjection.abstractions.9.0.5.nupkg.sha512",
+    "C:\\Users\\ramge\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\9.0.5\\microsoft.extensions.logging.abstractions.9.0.5.nupkg.sha512",
+    "C:\\Users\\ramge\\.nuget\\packages\\microsoft.openapi\\1.6.17\\microsoft.openapi.1.6.17.nupkg.sha512"
+  ],
+  "logs": []
+}

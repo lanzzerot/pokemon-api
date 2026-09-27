@@ -1,0 +1,110 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>PokemonApi.UnitTests</name>
+    </assembly>
+    <members>
+        <member name="T:PokemonApi.UnitTests.GetPokemonQueryHandlerTests">
+            <summary>
+            Pruebas de los casos de uso que recuperan un Pokemon concreto.
+            </summary>
+            <remarks>
+            Lo que se verifica aqui es el contrato de errores: un identificador o nombre
+            inexistente debe traducirse a <c>pokemon.not_found</c> (404) y no a un
+            fallo generico, porque es la unica forma que tiene el cliente de
+            distinguir "no existe" de "algo se rompio".
+            </remarks>
+        </member>
+        <member name="T:PokemonApi.UnitTests.ListPokemonQueryHandlerTests">
+            <summary>
+            Pruebas de la orquestacion de <see cref="T:PokemonApi.Application.Features.Pokemon.List.ListPokemonQueryHandler"/>.
+            </summary>
+        </member>
+        <member name="M:PokemonApi.UnitTests.ListPokemonQueryHandlerTests.#ctor">
+            <summary>Inicializa las pruebas con un catalogo de prueba.</summary>
+        </member>
+        <member name="T:PokemonApi.UnitTests.GetEvolutionChainQueryHandlerTests">
+            <summary>
+            Pruebas de la ordenacion de la cadena evolutiva.
+            </summary>
+        </member>
+        <member name="T:PokemonApi.UnitTests.ListPokemonQueryValidatorTests">
+            <summary>
+            Pruebas de las invariantes de <see cref="T:PokemonApi.Application.Features.Pokemon.List.ListPokemonQuery"/> que no dependen
+            del contenido del catalogo.
+            </summary>
+        </member>
+        <member name="T:PokemonApi.UnitTests.MeasureTests">
+            <summary>
+            Pruebas de <see cref="T:PokemonApi.Domain.ValueObjects.Measure"/>, que conserva las unidades del dataset
+            (decimetros y hectogramos) y las convierte a las unidades convencionales de
+            la API (metros y kilogramos).
+            </summary>
+        </member>
+        <member name="T:PokemonApi.UnitTests.PokemonSearchQueryBuilderTests">
+            <summary>
+            Pruebas de la traduccion de la peticion del cliente a la consulta interna.
+            </summary>
+            <remarks>
+            Es la capa mas sensible a regresiones: decide que se considera un valor
+            valido de catalogo, convierte las unidades de entrada y normaliza los campos
+            de Closed World. Cualquier cambio aqui cambia el contrato publico.
+            </remarks>
+        </member>
+        <member name="M:PokemonApi.UnitTests.PokemonSearchQueryBuilderTests.#ctor">
+            <summary>Inicializa las pruebas con un catalogo de prueba.</summary>
+        </member>
+        <member name="T:PokemonApi.UnitTests.PokemonStatsTests">
+            <summary>
+            Pruebas de <see cref="T:PokemonApi.Domain.ValueObjects.PokemonStats"/>, en particular del total derivado que
+            expone el detalle de cada Pokemon.
+            </summary>
+        </member>
+        <member name="T:PokemonApi.UnitTests.SlugTests">
+            <summary>
+            Pruebas del value object <see cref="T:PokemonApi.Domain.ValueObjects.Slug"/>, que normaliza los nombres que
+            llegan del dataset y del cliente.
+            </summary>
+        </member>
+        <member name="T:PokemonApi.UnitTests.TestData">
+            <summary>
+            Datos compartidos por las pruebas. Centralizarlos evita duplicar un
+            constructor de 29 parametros en cada prueba y deja el foco en el
+            comportamiento que se quiere comprobar.
+            </summary>
+        </member>
+        <member name="P:PokemonApi.UnitTests.TestData.Generations">
+            <summary>Generaciones presentes en el catalogo.</summary>
+        </member>
+        <member name="P:PokemonApi.UnitTests.TestData.Types">
+            <summary>Tipos presentes en el catalogo.</summary>
+        </member>
+        <member name="P:PokemonApi.UnitTests.TestData.Abilities">
+            <summary>Habilidades presentes en el catalogo.</summary>
+        </member>
+        <member name="P:PokemonApi.UnitTests.TestData.EggGroups">
+            <summary>Grupos de huevo presentes en el catalogo.</summary>
+        </member>
+        <member name="P:PokemonApi.UnitTests.TestData.Habitats">
+            <summary>Habitats presentes en el catalogo.</summary>
+        </member>
+        <member name="P:PokemonApi.UnitTests.TestData.Regions">
+            <summary>Regiones presentes en el catalogo.</summary>
+        </member>
+        <member name="M:PokemonApi.UnitTests.TestData.Pokemon(System.Int32,System.String,PokemonApi.Domain.Enumerations.PokemonGeneration,System.Nullable{PokemonApi.Domain.ValueObjects.Slug},System.Collections.Generic.IReadOnlyList{PokemonApi.Domain.ValueObjects.Evolution},System.Int32)">
+            <summary>Crea un Pokemon valido con los valores por defecto.</summary>
+            <param name="id">Identificador.</param>
+            <param name="name">Slug del nombre.</param>
+            <param name="generation">Generacion de pertenencia.</param>
+            <param name="evolvesFrom">Slug del Pokemon del que evoluciona.</param>
+            <param name="evolvesTo">Evoluciones posibles.</param>
+            <param name="chainId">Identificador de la cadena evolutiva.</param>
+            <returns>El Pokemon construido.</returns>
+        </member>
+        <member name="M:PokemonApi.UnitTests.TestData.SlugOf(System.String)">
+            <summary>Crea un slug, fallando la prueba si el valor no es valido.</summary>
+            <param name="value">Valor a normalizar.</param>
+            <returns>El slug creado.</returns>
+        </member>
+    </members>
+</doc>

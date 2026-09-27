@@ -1,0 +1,1060 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>PokemonApi.Infrastructure</name>
+    </assembly>
+    <members>
+        <member name="T:PokemonApi.Infrastructure.Data.DatasetMetadataView">
+            <summary>
+            Procedencia del dataset, expuesta por la API y por el endpoint de salud.
+            </summary>
+            <remarks>
+            Existe como tipo publico y no como el record interno del JSON para que el
+            contrato de la API no dependa de la forma del recurso embebido: cambiar el
+            formato del dataset no debe cambiar el contrato published de la API.
+            </remarks>
+            <param name="Source">Nombre de la fuente de datos.</param>
+            <param name="SourceVersion">Version de la fuente de datos.</param>
+            <param name="SourceUrl">Sitio web de la fuente de datos.</param>
+            <param name="License">Licencia de los datos.</param>
+            <param name="Attribution">Atribucion que debe mostrarse a los consumidores.</param>
+            <param name="GeneratedAtUtc">Momento de generacion del recurso, en UTC.</param>
+            <param name="PokemonCount">Numero de Pokemon incluidos.</param>
+            <param name="GenerationCount">Numero de generaciones incluidas.</param>
+            <param name="EvolutionCount">Numero de relaciones evolutivas incluidas.</param>
+            <param name="SchemaVersion">Version del formato del dataset.</param>
+        </member>
+        <member name="M:PokemonApi.Infrastructure.Data.DatasetMetadataView.#ctor(System.String,System.String,System.String,System.String,System.String,System.DateTimeOffset,System.Int32,System.Int32,System.Int32,System.String)">
+            <summary>
+            Procedencia del dataset, expuesta por la API y por el endpoint de salud.
+            </summary>
+            <remarks>
+            Existe como tipo publico y no como el record interno del JSON para que el
+            contrato de la API no dependa de la forma del recurso embebido: cambiar el
+            formato del dataset no debe cambiar el contrato published de la API.
+            </remarks>
+            <param name="Source">Nombre de la fuente de datos.</param>
+            <param name="SourceVersion">Version de la fuente de datos.</param>
+            <param name="SourceUrl">Sitio web de la fuente de datos.</param>
+            <param name="License">Licencia de los datos.</param>
+            <param name="Attribution">Atribucion que debe mostrarse a los consumidores.</param>
+            <param name="GeneratedAtUtc">Momento de generacion del recurso, en UTC.</param>
+            <param name="PokemonCount">Numero de Pokemon incluidos.</param>
+            <param name="GenerationCount">Numero de generaciones incluidas.</param>
+            <param name="EvolutionCount">Numero de relaciones evolutivas incluidas.</param>
+            <param name="SchemaVersion">Version del formato del dataset.</param>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetMetadataView.Source">
+            <summary>Nombre de la fuente de datos.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetMetadataView.SourceVersion">
+            <summary>Version de la fuente de datos.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetMetadataView.SourceUrl">
+            <summary>Sitio web de la fuente de datos.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetMetadataView.License">
+            <summary>Licencia de los datos.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetMetadataView.Attribution">
+            <summary>Atribucion que debe mostrarse a los consumidores.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetMetadataView.GeneratedAtUtc">
+            <summary>Momento de generacion del recurso, en UTC.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetMetadataView.PokemonCount">
+            <summary>Numero de Pokemon incluidos.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetMetadataView.GenerationCount">
+            <summary>Numero de generaciones incluidas.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetMetadataView.EvolutionCount">
+            <summary>Numero de relaciones evolutivas incluidas.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetMetadataView.SchemaVersion">
+            <summary>Version del formato del dataset.</summary>
+        </member>
+        <member name="M:PokemonApi.Infrastructure.Data.DatasetMetadataView.From(PokemonApi.Infrastructure.Data.DatasetMetadata)">
+            <summary>Proyecta la vista publica desde el record interno del dataset.</summary>
+            <param name="metadata">Metadatos internos.</param>
+            <returns>La vista expuesta por la API.</returns>
+        </member>
+        <member name="T:PokemonApi.Infrastructure.Data.PokemonDataSet">
+            <summary>
+            Catalogo de Pokemon completo, materializado en memoria y de solo lectura.
+            </summary>
+            <remarks>
+            <para>
+            Es la unica fuente de datos en tiempo de ejecucion. El JSON se analiza una
+            vez durante el arranque y a partir de ahi todas las peticiones se resuelven
+            contra estas estructuras, sin disco, sin red y sin bloqueos: buscar sobre mil
+            entidades en memoria cuesta microsegundos y hace innecesaria una base de
+            datos para una API de solo lectura.
+            </para>
+            <para>
+            Todos los indices son <see cref="T:System.Collections.Generic.Dictionary`2"/> y
+            <see cref="T:System.Collections.Generic.IReadOnlyList`1"/> construidos una sola vez y nunca modificados,
+            de modo que las peticiones concurrentes solo leen. Se documenta como
+            invariante, no como recomendacion: es la razon de que la instancia se cree una
+            vez y se comparta como singleton.
+            </para>
+            </remarks>
+        </member>
+        <member name="M:PokemonApi.Infrastructure.Data.PokemonDataSet.#ctor(PokemonApi.Infrastructure.Data.DatasetMetadata,System.Collections.Generic.IReadOnlyList{PokemonApi.Domain.Entities.Pokemon},System.Collections.Generic.IReadOnlyList{PokemonApi.Domain.Entities.Generation},System.Collections.Generic.IReadOnlyList{PokemonApi.Domain.Entities.PokemonTypeInfo},System.Collections.Generic.IReadOnlyList{PokemonApi.Domain.Entities.AbilityInfo},System.Collections.Generic.IReadOnlyList{PokemonApi.Domain.Entities.EggGroupInfo},System.Collections.Generic.IReadOnlyList{PokemonApi.Domain.Entities.CatalogEntryInfo},System.Collections.Generic.IReadOnlyList{PokemonApi.Domain.Entities.CatalogEntryInfo})">
+            <summary>Inicializa la instantanea a partir de las entidades ya validadas.</summary>
+            <param name="metadata">Procedencia del dataset.</param>
+            <param name="pokemon">Entidades de dominio.</param>
+            <param name="generations">Generaciones del catalogo.</param>
+            <param name="types">Tipos con su recuento.</param>
+            <param name="abilities">Habilidades con su recuento.</param>
+            <param name="eggGroups">Grupos de huevo.</param>
+            <param name="habitats">Habitats con su recuento.</param>
+            <param name="regions">Regiones con su recuento.</param>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.PokemonDataSet.Metadata">
+            <summary>Procedencia y trazabilidad del dataset cargado.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.PokemonDataSet.Pokemon">
+            <summary>Todos los Pokemon, ordenados por identificador.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.PokemonDataSet.Generations">
+            <summary>Generaciones del catalogo, ordenadas por identificador.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.PokemonDataSet.Types">
+            <summary>Tipos del catalogo, con su recuento de Pokemon.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.PokemonDataSet.Abilities">
+            <summary>Habilidades del catalogo, con su recuento de Pokemon.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.PokemonDataSet.EggGroups">
+            <summary>Grupos de huevo del catalogo.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.PokemonDataSet.Habitats">
+            <summary>Habitats del catalogo.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.PokemonDataSet.Regions">
+            <summary>Regiones del catalogo.</summary>
+        </member>
+        <member name="M:PokemonApi.Infrastructure.Data.PokemonDataSet.FindById(System.Int32)">
+            <summary>
+            Busca un Pokemon por identificador.
+            </summary>
+            <param name="id">Identificador de la Poke&#x27;dex.</param>
+            <returns>El Pokemon, o <see langword="null"/> si no existe.</returns>
+        </member>
+        <member name="M:PokemonApi.Infrastructure.Data.PokemonDataSet.FindBySlug(System.String)">
+            <summary>
+            Busca un Pokemon por su slug canonico.
+            </summary>
+            <param name="slug">Slug canonico del nombre.</param>
+            <returns>El Pokemon, o <see langword="null"/> si no existe.</returns>
+        </member>
+        <member name="M:PokemonApi.Infrastructure.Data.PokemonDataSet.FindEvolutionChain(System.Int32)">
+            <summary>
+            Devuelve la cadena evolutiva indicada, con la forma base primero.
+            </summary>
+            <param name="chainId">Identificador de la cadena.</param>
+            <returns>Los Pokemon de la cadena; vacia si no existe.</returns>
+        </member>
+        <member name="M:PokemonApi.Infrastructure.Data.PokemonDataSet.OrderedById">
+            <summary>
+            Devuelve todos los Pokemon en orden de identificador, la posicion por
+            defecto del listado.
+            </summary>
+            <returns>La secuencia completa, sin copia.</returns>
+        </member>
+        <member name="T:PokemonApi.Infrastructure.Data.PokemonDatasetFile">
+            <summary>
+            Forma del recurso <c>Data/pokemon.json</c> tal y como lo produce
+            <c>tools/build-dataset.mjs</c>.
+            </summary>
+            <remarks>
+            <para>
+            Son records planos y mutables por construccion, sin logica de negocio: su
+            unico proposito es describir el JSON. La conversion a entidades de dominio la
+            realiza <see cref="T:PokemonApi.Infrastructure.Data.PokemonDatasetMapper"/>, que es donde se aplican las
+            invariantes.
+            </para>
+            <para>
+            Se deserializan con <c>PropertyNameCaseInsensitive</c>, de modo que los
+            nombres en <c>PascalCase</c> de estos records corresponden a las claves
+            <c>camelCase</c> del JSON sin necesidad de atributos en cada propiedad.
+            </para>
+            <para>
+            Los tipos de enumeracion del dominio (generacion, rareza, estadistica) no se
+            usan aqui a proposito: el dataset solo contiene identificadores, y resolverlos
+            contra las enumeraciones del dominio es responsabilidad del mapper.
+            </para>
+            </remarks>
+        </member>
+        <member name="T:PokemonApi.Infrastructure.Data.DatasetMetadata">
+            <summary>Procedencia y trazabilidad del dataset.</summary>
+            <param name="SchemaVersion">Version del formato de este recurso.</param>
+            <param name="Source">Nombre de la fuente de datos.</param>
+            <param name="SourceVersion">Version de la fuente de datos.</param>
+            <param name="SourceUrl">Sitio web de la fuente de datos.</param>
+            <param name="License">Licencia de los datos.</param>
+            <param name="Attribution">Atribucion que debe mostrarse a los consumidores.</param>
+            <param name="GeneratedAtUtc">Momento de generacion del recurso, en UTC.</param>
+            <param name="PokemonCount">Numero de Pokemon incluidos.</param>
+            <param name="GenerationCount">Numero de generaciones incluidas.</param>
+            <param name="EvolutionCount">Numero de relaciones evolutivas incluidas.</param>
+        </member>
+        <member name="M:PokemonApi.Infrastructure.Data.DatasetMetadata.#ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.DateTimeOffset,System.Int32,System.Int32,System.Int32)">
+            <summary>Procedencia y trazabilidad del dataset.</summary>
+            <param name="SchemaVersion">Version del formato de este recurso.</param>
+            <param name="Source">Nombre de la fuente de datos.</param>
+            <param name="SourceVersion">Version de la fuente de datos.</param>
+            <param name="SourceUrl">Sitio web de la fuente de datos.</param>
+            <param name="License">Licencia de los datos.</param>
+            <param name="Attribution">Atribucion que debe mostrarse a los consumidores.</param>
+            <param name="GeneratedAtUtc">Momento de generacion del recurso, en UTC.</param>
+            <param name="PokemonCount">Numero de Pokemon incluidos.</param>
+            <param name="GenerationCount">Numero de generaciones incluidas.</param>
+            <param name="EvolutionCount">Numero de relaciones evolutivas incluidas.</param>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetMetadata.SchemaVersion">
+            <summary>Version del formato de este recurso.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetMetadata.Source">
+            <summary>Nombre de la fuente de datos.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetMetadata.SourceVersion">
+            <summary>Version de la fuente de datos.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetMetadata.SourceUrl">
+            <summary>Sitio web de la fuente de datos.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetMetadata.License">
+            <summary>Licencia de los datos.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetMetadata.Attribution">
+            <summary>Atribucion que debe mostrarse a los consumidores.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetMetadata.GeneratedAtUtc">
+            <summary>Momento de generacion del recurso, en UTC.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetMetadata.PokemonCount">
+            <summary>Numero de Pokemon incluidos.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetMetadata.GenerationCount">
+            <summary>Numero de generaciones incluidas.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetMetadata.EvolutionCount">
+            <summary>Numero de relaciones evolutivas incluidas.</summary>
+        </member>
+        <member name="T:PokemonApi.Infrastructure.Data.DatasetGeneration">
+            <summary>Generacion del catalogo, con la region a la que pertenece.</summary>
+        </member>
+        <member name="M:PokemonApi.Infrastructure.Data.DatasetGeneration.#ctor(System.Int32,System.String,System.String,System.String,System.String,System.Int32)">
+            <summary>Generacion del catalogo, con la region a la que pertenece.</summary>
+        </member>
+        <member name="T:PokemonApi.Infrastructure.Data.DatasetCatalogEntry">
+            <summary>Entrada de catalogo simple (tipos, grupos de huevo, habitats).</summary>
+        </member>
+        <member name="M:PokemonApi.Infrastructure.Data.DatasetCatalogEntry.#ctor(System.Int32,System.String,System.String)">
+            <summary>Entrada de catalogo simple (tipos, grupos de huevo, habitats).</summary>
+        </member>
+        <member name="T:PokemonApi.Infrastructure.Data.DatasetAbility">
+            <summary>Habilidad del catalogo, con su descripcion resumida.</summary>
+        </member>
+        <member name="M:PokemonApi.Infrastructure.Data.DatasetAbility.#ctor(System.Int32,System.String,System.String,System.Boolean,System.String)">
+            <summary>Habilidad del catalogo, con su descripcion resumida.</summary>
+        </member>
+        <member name="T:PokemonApi.Infrastructure.Data.DatasetPokemon">
+            <summary>Especie del catalogo.</summary>
+            <param name="Id">Identificador de la Poke&#x27;dex nacional.</param>
+            <param name="Name">Slug canonico del nombre.</param>
+            <param name="DisplayName">Nombre presentable.</param>
+            <param name="Genus">Categoria a la que pertenece.</param>
+            <param name="Description">Descripcion de la Poke&#x27;dex.</param>
+            <param name="SpeciesId">Identificador de la especie.</param>
+            <param name="GenerationId">Identificador numerico de la generacion.</param>
+            <param name="Generation">Slug de la generacion.</param>
+            <param name="Region">Slug de la region.</param>
+            <param name="Types">Slugs de los tipos, en orden de prioridad.</param>
+            <param name="Height">Altura en decimetros.</param>
+            <param name="Weight">Peso en hectogramos.</param>
+            <param name="BaseExperience">Experiencia base, o <see langword="null"/> si no se conoce.</param>
+            <param name="Stats">Estadisticas base de combate.</param>
+            <param name="TotalStats">Suma de las seis estadisticas.</param>
+            <param name="Abilities">Habilidades que puede poseer.</param>
+            <param name="IsLegendary">Si es legendary.</param>
+            <param name="IsMythical">Si es mythical.</param>
+            <param name="IsBaby">Si es una forma bebe.</param>
+            <param name="CaptureRate">Tasa de captura, de 0 a 255.</param>
+            <param name="BaseHappiness">Felicidad base.</param>
+            <param name="GenderRate">Probabilidad de ser hembra, de 0 a 8; -1 si es indeterminado.</param>
+            <param name="HasGenderDifferences">Si su forma hembra difiere visualmente.</param>
+            <param name="HatchCounter">Pasos necesarios para eclosionar del huevo.</param>
+            <param name="GrowthRate">Slug de la velocidad de crecimiento.</param>
+            <param name="EggGroups">Slugs de los grupos de huevo.</param>
+            <param name="Color">Slug del color predominante.</param>
+            <param name="Habitat">Slug del habitat, o <see langword="null"/> si no tiene.</param>
+            <param name="Shape">Slug de la silueta.</param>
+            <param name="EvolvesFrom">Slug del Pokemon del que evoluciona, o <see langword="null"/>.</param>
+            <param name="EvolutionChainId">Identificador de su cadena evolutiva.</param>
+            <param name="EvolvesTo">Evoluciones posibles.</param>
+            <param name="Sprites">Direcciones de sus imagenes.</param>
+        </member>
+        <member name="M:PokemonApi.Infrastructure.Data.DatasetPokemon.#ctor(System.Int32,System.String,System.String,System.String,System.String,System.Int32,System.Int32,System.String,System.String,System.Collections.Generic.IReadOnlyList{System.String},System.Int32,System.Int32,System.Nullable{System.Int32},PokemonApi.Infrastructure.Data.DatasetStats,System.Int32,System.Collections.Generic.IReadOnlyList{PokemonApi.Infrastructure.Data.DatasetAbilityReference},System.Boolean,System.Boolean,System.Boolean,System.Int32,System.Int32,System.Int32,System.Boolean,System.Int32,System.String,System.Collections.Generic.IReadOnlyList{System.String},System.String,System.String,System.String,System.String,System.Int32,System.Collections.Generic.IReadOnlyList{PokemonApi.Infrastructure.Data.DatasetEvolution},PokemonApi.Infrastructure.Data.DatasetSprites)">
+            <summary>Especie del catalogo.</summary>
+            <param name="Id">Identificador de la Poke&#x27;dex nacional.</param>
+            <param name="Name">Slug canonico del nombre.</param>
+            <param name="DisplayName">Nombre presentable.</param>
+            <param name="Genus">Categoria a la que pertenece.</param>
+            <param name="Description">Descripcion de la Poke&#x27;dex.</param>
+            <param name="SpeciesId">Identificador de la especie.</param>
+            <param name="GenerationId">Identificador numerico de la generacion.</param>
+            <param name="Generation">Slug de la generacion.</param>
+            <param name="Region">Slug de la region.</param>
+            <param name="Types">Slugs de los tipos, en orden de prioridad.</param>
+            <param name="Height">Altura en decimetros.</param>
+            <param name="Weight">Peso en hectogramos.</param>
+            <param name="BaseExperience">Experiencia base, o <see langword="null"/> si no se conoce.</param>
+            <param name="Stats">Estadisticas base de combate.</param>
+            <param name="TotalStats">Suma de las seis estadisticas.</param>
+            <param name="Abilities">Habilidades que puede poseer.</param>
+            <param name="IsLegendary">Si es legendary.</param>
+            <param name="IsMythical">Si es mythical.</param>
+            <param name="IsBaby">Si es una forma bebe.</param>
+            <param name="CaptureRate">Tasa de captura, de 0 a 255.</param>
+            <param name="BaseHappiness">Felicidad base.</param>
+            <param name="GenderRate">Probabilidad de ser hembra, de 0 a 8; -1 si es indeterminado.</param>
+            <param name="HasGenderDifferences">Si su forma hembra difiere visualmente.</param>
+            <param name="HatchCounter">Pasos necesarios para eclosionar del huevo.</param>
+            <param name="GrowthRate">Slug de la velocidad de crecimiento.</param>
+            <param name="EggGroups">Slugs de los grupos de huevo.</param>
+            <param name="Color">Slug del color predominante.</param>
+            <param name="Habitat">Slug del habitat, o <see langword="null"/> si no tiene.</param>
+            <param name="Shape">Slug de la silueta.</param>
+            <param name="EvolvesFrom">Slug del Pokemon del que evoluciona, o <see langword="null"/>.</param>
+            <param name="EvolutionChainId">Identificador de su cadena evolutiva.</param>
+            <param name="EvolvesTo">Evoluciones posibles.</param>
+            <param name="Sprites">Direcciones de sus imagenes.</param>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetPokemon.Id">
+            <summary>Identificador de la Poke&#x27;dex nacional.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetPokemon.Name">
+            <summary>Slug canonico del nombre.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetPokemon.DisplayName">
+            <summary>Nombre presentable.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetPokemon.Genus">
+            <summary>Categoria a la que pertenece.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetPokemon.Description">
+            <summary>Descripcion de la Poke&#x27;dex.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetPokemon.SpeciesId">
+            <summary>Identificador de la especie.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetPokemon.GenerationId">
+            <summary>Identificador numerico de la generacion.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetPokemon.Generation">
+            <summary>Slug de la generacion.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetPokemon.Region">
+            <summary>Slug de la region.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetPokemon.Types">
+            <summary>Slugs de los tipos, en orden de prioridad.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetPokemon.Height">
+            <summary>Altura en decimetros.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetPokemon.Weight">
+            <summary>Peso en hectogramos.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetPokemon.BaseExperience">
+            <summary>Experiencia base, o <see langword="null"/> si no se conoce.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetPokemon.Stats">
+            <summary>Estadisticas base de combate.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetPokemon.TotalStats">
+            <summary>Suma de las seis estadisticas.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetPokemon.Abilities">
+            <summary>Habilidades que puede poseer.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetPokemon.IsLegendary">
+            <summary>Si es legendary.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetPokemon.IsMythical">
+            <summary>Si es mythical.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetPokemon.IsBaby">
+            <summary>Si es una forma bebe.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetPokemon.CaptureRate">
+            <summary>Tasa de captura, de 0 a 255.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetPokemon.BaseHappiness">
+            <summary>Felicidad base.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetPokemon.GenderRate">
+            <summary>Probabilidad de ser hembra, de 0 a 8; -1 si es indeterminado.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetPokemon.HasGenderDifferences">
+            <summary>Si su forma hembra difiere visualmente.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetPokemon.HatchCounter">
+            <summary>Pasos necesarios para eclosionar del huevo.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetPokemon.GrowthRate">
+            <summary>Slug de la velocidad de crecimiento.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetPokemon.EggGroups">
+            <summary>Slugs de los grupos de huevo.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetPokemon.Color">
+            <summary>Slug del color predominante.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetPokemon.Habitat">
+            <summary>Slug del habitat, o <see langword="null"/> si no tiene.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetPokemon.Shape">
+            <summary>Slug de la silueta.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetPokemon.EvolvesFrom">
+            <summary>Slug del Pokemon del que evoluciona, o <see langword="null"/>.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetPokemon.EvolutionChainId">
+            <summary>Identificador de su cadena evolutiva.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetPokemon.EvolvesTo">
+            <summary>Evoluciones posibles.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetPokemon.Sprites">
+            <summary>Direcciones de sus imagenes.</summary>
+        </member>
+        <member name="T:PokemonApi.Infrastructure.Data.DatasetStats">
+            <summary>Las seis estadisticas base de combate.</summary>
+        </member>
+        <member name="M:PokemonApi.Infrastructure.Data.DatasetStats.#ctor(System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32)">
+            <summary>Las seis estadisticas base de combate.</summary>
+        </member>
+        <member name="T:PokemonApi.Infrastructure.Data.DatasetAbilityReference">
+            <summary>Referencia a una habilidad desde la ficha de un Pokemon.</summary>
+        </member>
+        <member name="M:PokemonApi.Infrastructure.Data.DatasetAbilityReference.#ctor(System.String,System.Boolean,System.Int32)">
+            <summary>Referencia a una habilidad desde la ficha de un Pokemon.</summary>
+        </member>
+        <member name="T:PokemonApi.Infrastructure.Data.DatasetEvolution">
+            <summary>Evolucion posible, con las condiciones que la habilitan.</summary>
+        </member>
+        <member name="M:PokemonApi.Infrastructure.Data.DatasetEvolution.#ctor(System.Int32,System.String,System.String,System.Collections.Generic.IReadOnlyList{PokemonApi.Infrastructure.Data.DatasetEvolutionRequirement})">
+            <summary>Evolucion posible, con las condiciones que la habilitan.</summary>
+        </member>
+        <member name="T:PokemonApi.Infrastructure.Data.DatasetEvolutionRequirement">
+            <summary>Condicion de evolucion. Solo un subconjunto de las propiedades tiene valor.</summary>
+            <param name="Trigger">Evento que dispara la evolucion.</param>
+            <param name="MinLevel">Nivel minimo necesario.</param>
+            <param name="Item">Objeto que se consume al evolucionar.</param>
+            <param name="HeldItem">Objeto que debe llevar encima al evolucionar.</param>
+            <param name="Location">Lugar donde debe producirse la evolucion.</param>
+            <param name="Gender">Genero requerido: <c>female</c> o <c>male</c>.</param>
+            <param name="KnownMove">Movimiento que debe conocer.</param>
+            <param name="KnownMoveType">Tipo que debe tener el movimiento conocido.</param>
+            <param name="TimeOfDay">Momento del dia requerido.</param>
+            <param name="MinHappiness">Felicidad minima.</param>
+            <param name="MinAffection">Afecto minimo.</param>
+            <param name="MinBeauty">Belleza minima.</param>
+            <param name="NeedsOverworldRain">Si requiere que este lloviendo en el mundo exterior.</param>
+            <param name="TurnUpsideDown">Si requiere mantener la consola boca abajo.</param>
+            <param name="RelativePhysicalStats">Comparacion de estadisticas fisicas: 1, 0 o -1.</param>
+            <param name="PartyType">Tipo de Pokemon que debe acompanar al grupo.</param>
+            <param name="TradeSpecies">Especie a la que hay que intercambiarlo.</param>
+        </member>
+        <member name="M:PokemonApi.Infrastructure.Data.DatasetEvolutionRequirement.#ctor(System.String,System.Nullable{System.Int32},System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Nullable{System.Int32},System.Nullable{System.Int32},System.Nullable{System.Int32},System.Boolean,System.Boolean,System.Nullable{System.Int32},System.String,System.String)">
+            <summary>Condicion de evolucion. Solo un subconjunto de las propiedades tiene valor.</summary>
+            <param name="Trigger">Evento que dispara la evolucion.</param>
+            <param name="MinLevel">Nivel minimo necesario.</param>
+            <param name="Item">Objeto que se consume al evolucionar.</param>
+            <param name="HeldItem">Objeto que debe llevar encima al evolucionar.</param>
+            <param name="Location">Lugar donde debe producirse la evolucion.</param>
+            <param name="Gender">Genero requerido: <c>female</c> o <c>male</c>.</param>
+            <param name="KnownMove">Movimiento que debe conocer.</param>
+            <param name="KnownMoveType">Tipo que debe tener el movimiento conocido.</param>
+            <param name="TimeOfDay">Momento del dia requerido.</param>
+            <param name="MinHappiness">Felicidad minima.</param>
+            <param name="MinAffection">Afecto minimo.</param>
+            <param name="MinBeauty">Belleza minima.</param>
+            <param name="NeedsOverworldRain">Si requiere que este lloviendo en el mundo exterior.</param>
+            <param name="TurnUpsideDown">Si requiere mantener la consola boca abajo.</param>
+            <param name="RelativePhysicalStats">Comparacion de estadisticas fisicas: 1, 0 o -1.</param>
+            <param name="PartyType">Tipo de Pokemon que debe acompanar al grupo.</param>
+            <param name="TradeSpecies">Especie a la que hay que intercambiarlo.</param>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetEvolutionRequirement.Trigger">
+            <summary>Evento que dispara la evolucion.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetEvolutionRequirement.MinLevel">
+            <summary>Nivel minimo necesario.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetEvolutionRequirement.Item">
+            <summary>Objeto que se consume al evolucionar.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetEvolutionRequirement.HeldItem">
+            <summary>Objeto que debe llevar encima al evolucionar.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetEvolutionRequirement.Location">
+            <summary>Lugar donde debe producirse la evolucion.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetEvolutionRequirement.Gender">
+            <summary>Genero requerido: <c>female</c> o <c>male</c>.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetEvolutionRequirement.KnownMove">
+            <summary>Movimiento que debe conocer.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetEvolutionRequirement.KnownMoveType">
+            <summary>Tipo que debe tener el movimiento conocido.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetEvolutionRequirement.TimeOfDay">
+            <summary>Momento del dia requerido.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetEvolutionRequirement.MinHappiness">
+            <summary>Felicidad minima.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetEvolutionRequirement.MinAffection">
+            <summary>Afecto minimo.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetEvolutionRequirement.MinBeauty">
+            <summary>Belleza minima.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetEvolutionRequirement.NeedsOverworldRain">
+            <summary>Si requiere que este lloviendo en el mundo exterior.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetEvolutionRequirement.TurnUpsideDown">
+            <summary>Si requiere mantener la consola boca abajo.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetEvolutionRequirement.RelativePhysicalStats">
+            <summary>Comparacion de estadisticas fisicas: 1, 0 o -1.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetEvolutionRequirement.PartyType">
+            <summary>Tipo de Pokemon que debe acompanar al grupo.</summary>
+        </member>
+        <member name="P:PokemonApi.Infrastructure.Data.DatasetEvolutionRequirement.TradeSpecies">
+            <summary>Especie a la que hay que intercambiarlo.</summary>
+        </member>
+        <member name="T:PokemonApi.Infrastructure.Data.DatasetSprites">
+            <summary>Direcciones de las imagenes de un Pokemon.</summary>
+        </member>
+        <member name="M:PokemonApi.Infrastructure.Data.DatasetSprites.#ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String)">
+            <summary>Direcciones de las imagenes de un Pokemon.</summary>
+        </member>
+        <member name="T:PokemonApi.Infrastructure.Data.PokemonDatasetLoader">
+            <summary>
+            Lee el recurso <c>Data/pokemon.json</c> incrustado en el ensamblado y lo
+            convierte en una <see cref="T:PokemonApi.Infrastructure.Data.PokemonDataSet"/>.
+            </summary>
+            <remarks>
+            <para>
+            Se ejecuta una unica vez, al arrancar la aplicacion. Leer desde el recurso
+            incrustado en lugar de desde el disco es deliberado: el artefacto publicado no
+            depende de ficheros externos, de rutas de contenido ni de permisos de lectura,
+            y desplegar se reduce a copiar una carpeta de binarios.
+            </para>
+            <para>
+            Los recuentos por tipo, habilidad, grupo de huevo y habitat no se almacenan
+            en el JSON: se derivan aqui recorriendo el catalogo, de modo que es
+            imposible que se desincronicen respecto a las Pokemon.
+            </para>
+            </remarks>
+        </member>
+        <member name="M:PokemonApi.Infrastructure.Data.PokemonDatasetLoader.#ctor(Microsoft.Extensions.Logging.ILogger{PokemonApi.Infrastructure.Data.PokemonDatasetLoader})">
+            <summary>
+            Lee el recurso <c>Data/pokemon.json</c> incrustado en el ensamblado y lo
+            convierte en una <see cref="T:PokemonApi.Infrastructure.Data.PokemonDataSet"/>.
+            </summary>
+            <remarks>
+            <para>
+            Se ejecuta una unica vez, al arrancar la aplicacion. Leer desde el recurso
+            incrustado en lugar de desde el disco es deliberado: el artefacto publicado no
+            depende de ficheros externos, de rutas de contenido ni de permisos de lectura,
+            y desplegar se reduce a copiar una carpeta de binarios.
+            </para>
+            <para>
+            Los recuentos por tipo, habilidad, grupo de huevo y habitat no se almacenan
+            en el JSON: se derivan aqui recorriendo el catalogo, de modo que es
+            imposible que se desincronicen respecto a las Pokemon.
+            </para>
+            </remarks>
+        </member>
+        <member name="F:PokemonApi.Infrastructure.Data.PokemonDatasetLoader.ResourceName">
+            <summary>Nombre logico del recurso incrustado.</summary>
+        </member>
+        <member name="M:PokemonApi.Infrastructure.Data.PokemonDatasetLoader.Load(System.Threading.CancellationToken)">
+            <summary>Carga y materializa el catalogo completo.</summary>
+            <param name="cancellationToken">Token de cancelacion.</param>
+            <returns>La instantanea lista para servir peticiones.</returns>
+            <exception cref="T:System.IO.InvalidDataException">Si el recurso falta o es incoherente.</exception>
+        </member>
+        <member name="M:PokemonApi.Infrastructure.Data.PokemonDatasetLoader.BuildRegions(System.Collections.Generic.IReadOnlyList{PokemonApi.Domain.Entities.Generation},System.Collections.Generic.IReadOnlyList{PokemonApi.Domain.Entities.Pokemon})">
+            <summary>
+            Deriva el catalogo de regiones a partir de las generaciones: el dataset no
+            lo almacena porque se deduce de la generacion a la que pertenece cada una.
+            </summary>
+            <param name="generations">Generaciones del catalogo.</param>
+            <param name="pokemon">Pokemon materializados, para contrastar los recuentos.</param>
+            <returns>Las regiones, en orden de aparicion.</returns>
+            <exception cref="T:System.IO.InvalidDataException">Si los recuentos no cuadran.</exception>
+        </member>
+        <member name="T:PokemonApi.Infrastructure.Data.PokemonDatasetMapper">
+            <summary>
+            Convierte el contenido de <c>Data/pokemon.json</c> en entidades de dominio.
+            </summary>
+            <remarks>
+            <para>
+            La conversion se ejecuta una unica vez, durante el arranque, y cualquier
+            dato incoherente aborta el arranque con un
+            <see cref="T:System.IO.InvalidDataException"/> que identifica la especie y el problema.
+            Es deliberado: un dataset corrupto debe detectarse al desplegar, no servir
+            respuestas silenciosamente incompletas durante meses.
+            </para>
+            <para>
+            El coste de la validacion es irrelevante aqui (ocurre una vez sobre mil
+            entidades) y a cambio el resto de la aplicacion puede asumir que el dominio
+            es valido.
+            </para>
+            </remarks>
+        </member>
+        <member name="F:PokemonApi.Infrastructure.Data.PokemonDatasetMapper.SupportedSchemaVersion">
+            <summary>Version del formato de dataset que este mapper entiende.</summary>
+        </member>
+        <member name="M:PokemonApi.Infrastructure.Data.PokemonDatasetMapper.#ctor(PokemonApi.Infrastructure.Data.PokemonDatasetFile)">
+            <summary>Inicializa el mapper con los catalogos que necesita resolver.</summary>
+            <param name="file">Dataset recien deserializado.</param>
+            <exception cref="T:System.IO.InvalidDataException">Si falta un catalogo imprescindible.</exception>
+        </member>
+        <member name="M:PokemonApi.Infrastructure.Data.PokemonDatasetMapper.MapGenerations(System.Collections.Generic.IReadOnlyList{PokemonApi.Infrastructure.Data.DatasetGeneration})">
+            <summary>Convierte la lista de generaciones del dataset.</summary>
+            <param name="entries">Generaciones del dataset.</param>
+            <returns>Entidades <see cref="T:PokemonApi.Domain.Entities.Generation"/> ordenadas por identificador.</returns>
+        </member>
+        <member name="M:PokemonApi.Infrastructure.Data.PokemonDatasetMapper.MapPokemon(PokemonApi.Infrastructure.Data.DatasetPokemon)">
+            <summary>Convierte la ficha de un Pokemon.</summary>
+            <param name="entry">Pokemon del dataset.</param>
+            <returns>La entidad de dominio.</returns>
+        </member>
+        <member name="M:PokemonApi.Infrastructure.Data.PokemonDatasetMapper.MapTypes(System.Collections.Generic.IReadOnlyList{PokemonApi.Infrastructure.Data.DatasetCatalogEntry},System.Collections.Generic.IReadOnlyDictionary{System.String,System.Int32})">
+            <summary>Convierte el catalogo de tipos, acompanado de sus recuentos.</summary>
+            <param name="entries">Tipos del dataset.</param>
+            <param name="counts">Numero de Pokemon por slug de tipo.</param>
+            <returns>Los tipos con su recuento.</returns>
+        </member>
+        <member name="M:PokemonApi.Infrastructure.Data.PokemonDatasetMapper.MapAbilities(System.Collections.Generic.IReadOnlyList{PokemonApi.Infrastructure.Data.DatasetAbility},System.Collections.Generic.IReadOnlyDictionary{System.String,System.Int32})">
+            <summary>Convierte el catalogo de habilidades, acompanado de sus recuentos.</summary>
+            <param name="entries">Habilidades del dataset.</param>
+            <param name="counts">Numero de Pokemon por slug de habilidad.</param>
+            <returns>Las habilidades con su recuento.</returns>
+        </member>
+        <member name="M:PokemonApi.Infrastructure.Data.PokemonDatasetMapper.MapEggGroups(System.Collections.Generic.IReadOnlyList{PokemonApi.Infrastructure.Data.DatasetCatalogEntry})">
+            <summary>Convierte el catalogo de grupos de huevo.</summary>
+            <param name="entries">Grupos de huevo del dataset.</param>
+            <returns>Los grupos de huevo, ordenados por identificador.</returns>
+        </member>
+        <member name="M:PokemonApi.Infrastructure.Data.PokemonDatasetMapper.MapSimpleCatalog(System.Collections.Generic.IReadOnlyList{PokemonApi.Infrastructure.Data.DatasetCatalogEntry},System.Collections.Generic.IReadOnlyDictionary{System.String,System.Int32},System.String)">
+            <summary>
+            Convierte un catalogo simple (habitats) acompanado de sus recuentos,
+            ordenado alfabeticamente por nombre.
+            </summary>
+            <param name="entries">Entradas del dataset.</param>
+            <param name="counts">Numero de Pokemon por slug.</param>
+            <param name="kind">Nombre del catalogo, usado en los mensajes de error.</param>
+            <returns>Las entradas con su recuento.</returns>
+        </member>
+        <member name="T:PokemonApi.Infrastructure.InfrastructureServiceCollectionExtensions">
+            <summary>
+            Registro de dependencias de la capa de infraestructura.
+            </summary>
+        </member>
+        <member name="M:PokemonApi.Infrastructure.InfrastructureServiceCollectionExtensions.AddInfrastructure(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            Registra el catalogo en memoria, los repositorios y el mediator con sus
+            comportamientos.
+            </summary>
+            <param name="services">Coleccion de servicios.</param>
+            <returns>La misma coleccion, para permitir el encadenamiento.</returns>
+        </member>
+        <member name="M:PokemonApi.Infrastructure.InfrastructureServiceCollectionExtensions.WarmUp(System.IServiceProvider)">
+            <summary>
+            Fuerza la materializacion del catalogo y comprueba que el proceso puede
+            arrancar con el dataset incrustado.
+            </summary>
+            <remarks>
+            Se invoca una vez desde <c>Program.cs</c> antes de aceptar trafico. Sin
+            esta llamada, el coste de la carga se pagaria en la primera peticion y un
+            dataset corrupto se manifestaria como un error sporadico en lugar de como
+            un fallo de despliegue limpio.
+            </remarks>
+            <param name="serviceProvider">Contenedor ya construido.</param>
+            <exception cref="T:System.IO.InvalidDataException">Si el recurso incrustado falta o es incoherente.</exception>
+        </member>
+        <member name="T:PokemonApi.Infrastructure.Logging.InfrastructureLog">
+            <summary>
+            Mensajes de registro de la capa de infraestructura.
+            </summary>
+            <remarks>
+            Se declaran con <see cref="T:Microsoft.Extensions.Logging.LoggerMessageAttribute"/> en lugar de llamar a
+            <c>LogInformation</c> directamente porque el generador de origen compila cada
+            mensaje a un delegado estatico: la plantilla y el formateo se resuelven una
+            unica vez al compilar, no en cada registro, y los parametros quedan
+            fuertemente tipados en lugar de ser <c>object?</c>.
+            </remarks>
+        </member>
+        <member name="M:PokemonApi.Infrastructure.Logging.InfrastructureLog.RequestStarted(Microsoft.Extensions.Logging.ILogger,System.String)">
+            <summary>Un caso de uso ha recibido una peticion.</summary>
+            <param name="logger">Registrador.</param>
+            <param name="requestName">Nombre del caso de uso.</param>
+        </member>
+        <member name="M:PokemonApi.Infrastructure.Logging.InfrastructureLog.RequestHandled(Microsoft.Extensions.Logging.ILogger,System.String,System.Double)">
+            <summary>Un caso de uso ha terminado con exito.</summary>
+            <param name="logger">Registrador.</param>
+            <param name="requestName">Nombre del caso de uso.</param>
+            <param name="elapsedMilliseconds">Duracion en milisegundos.</param>
+        </member>
+        <member name="M:PokemonApi.Infrastructure.Logging.InfrastructureLog.RequestCompletedWithDomainError(Microsoft.Extensions.Logging.ILogger,System.String,System.Double)">
+            <summary>
+            Un caso de uso ha terminado devolviendo un error de dominio.
+            </summary>
+            <remarks>
+            Se registra a nivel <see cref="F:Microsoft.Extensions.Logging.LogLevel.Information"/> y no
+            <see cref="F:Microsoft.Extensions.Logging.LogLevel.Warning"/> porque un 404 o un filtro sin coincidencias
+            son trafico normal de una API de consulta, no un incidente. Solo las
+            excepciones suben a <see cref="F:Microsoft.Extensions.Logging.LogLevel.Error"/>.
+            </remarks>
+            <param name="logger">Registrador.</param>
+            <param name="requestName">Nombre del caso de uso.</param>
+            <param name="elapsedMilliseconds">Duracion en milisegundos.</param>
+        </member>
+        <member name="M:PokemonApi.Infrastructure.Logging.InfrastructureLog.RequestFailed(Microsoft.Extensions.Logging.ILogger,System.Exception,System.String,System.Double)">
+            <summary>Un caso de uso ha fallado con una excepcion.</summary>
+            <param name="logger">Registrador.</param>
+            <param name="exception">Excepcion capturada.</param>
+            <param name="requestName">Nombre del caso de uso.</param>
+            <param name="elapsedMilliseconds">Duracion en milisegundos.</param>
+        </member>
+        <member name="M:PokemonApi.Infrastructure.Logging.InfrastructureLog.DataSetLoaded(Microsoft.Extensions.Logging.ILogger,System.Int32,System.Int32,System.String,System.String,System.String,System.DateTimeOffset)">
+            <summary>El dataset incrustado se ha materializado.</summary>
+            <param name="logger">Registrador.</param>
+            <param name="pokemonCount">Numero de Pokemon cargados.</param>
+            <param name="generationCount">Numero de generaciones cargadas.</param>
+            <param name="schemaVersion">Version del formato del dataset.</param>
+            <param name="source">Fuente de los datos.</param>
+            <param name="sourceVersion">Version de la fuente.</param>
+            <param name="generatedAtUtc">Momento de generacion del recurso.</param>
+        </member>
+        <member name="T:PokemonApi.Infrastructure.Messaging.LoggingBehavior`2">
+            <summary>
+            Registra el inicio y el final de cada peticion, con su resultado.
+            </summary>
+            <remarks>
+            <para>
+            Se registra como comportamiento abierto (<c>IPipelineBehavior&lt;,&gt;</c>),
+            de modo que el mismo tipo sirve para todos los casos de uso sin codigo
+            repetido.
+            </para>
+            <para>
+            El nivel de log se elige segun el resultado, y para eso no hace falta conocer
+            el tipo concreto de la respuesta: todos los casos de uso devuelven un
+            <see cref="T:PokemonApi.Domain.Common.Result"/>, que es donde vive el indicador de exito.
+            </para>
+            </remarks>
+            <typeparam name="TRequest">Tipo de la peticion.</typeparam>
+            <typeparam name="TResponse">Tipo de la respuesta.</typeparam>
+            <param name="logger">Registrador asociado al comportamiento.</param>
+        </member>
+        <member name="M:PokemonApi.Infrastructure.Messaging.LoggingBehavior`2.#ctor(Microsoft.Extensions.Logging.ILogger{PokemonApi.Infrastructure.Messaging.LoggingBehavior{`0,`1}})">
+            <summary>
+            Registra el inicio y el final de cada peticion, con su resultado.
+            </summary>
+            <remarks>
+            <para>
+            Se registra como comportamiento abierto (<c>IPipelineBehavior&lt;,&gt;</c>),
+            de modo que el mismo tipo sirve para todos los casos de uso sin codigo
+            repetido.
+            </para>
+            <para>
+            El nivel de log se elige segun el resultado, y para eso no hace falta conocer
+            el tipo concreto de la respuesta: todos los casos de uso devuelven un
+            <see cref="T:PokemonApi.Domain.Common.Result"/>, que es donde vive el indicador de exito.
+            </para>
+            </remarks>
+            <typeparam name="TRequest">Tipo de la peticion.</typeparam>
+            <typeparam name="TResponse">Tipo de la respuesta.</typeparam>
+            <param name="logger">Registrador asociado al comportamiento.</param>
+        </member>
+        <member name="M:PokemonApi.Infrastructure.Messaging.LoggingBehavior`2.HandleAsync(`0,PokemonApi.Application.Abstractions.Messaging.RequestHandlerDelegate{`1},System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:PokemonApi.Infrastructure.Messaging.IRequestExecutor">
+            <summary>
+            Ejecutor no generico de una peticion concreta.
+            </summary>
+            <remarks>
+            Existe para que el mediator pueda cachear, por cada tipo de peticion, un
+            ejecutor ya cerrado sobre los tipos <c>TRequest</c> y <c>TResponse</c>. Sin
+            este indireccion, resolver el tipo de respuesta exigiria reflexion en cada
+            peticion; con el, el coste se paga una sola vez por tipo.
+            </remarks>
+        </member>
+        <member name="M:PokemonApi.Infrastructure.Messaging.IRequestExecutor.ExecuteAsync(System.IServiceProvider,System.Object,System.Threading.CancellationToken)">
+            <summary>Ejecuta la peticion a traves de la cadena de comportamientos.</summary>
+            <param name="serviceProvider">Contenedor de inyeccion de dependencias.</param>
+            <param name="request">Peticion recibida.</param>
+            <param name="cancellationToken">Token de cancelacion.</param>
+            <returns>La respuesta del handler.</returns>
+        </member>
+        <member name="T:PokemonApi.Infrastructure.Messaging.Mediator">
+            <summary>
+            Implementacion de <see cref="T:PokemonApi.Application.Abstractions.Messaging.ISender"/> que localiza el handler de cada
+            peticion en el contenedor de inyeccion de dependencias y lo ejecuta a traves
+            de la cadena de comportamientos transversales.
+            </summary>
+            <remarks>
+            <para>
+            Es un mediator propio, deliberadamente minimo, en lugar de una libreria
+            externa. La API solo necesita resolver un unico handler por tipo de peticion
+            y ejecutar una lista de comportamientos: implementar esas dos ideas en unas
+            pocas decenas de lineas evita sumar una dependencia externa y deja el flujo de
+            ejecucion completamente visible para quien lea el repositorio.
+            </para>
+            <para>
+            Los ejecutores se cachean por tipo de peticion en un diccionario concurrente,
+            de modo que la reflexion necesaria para cerrar los tipos genericos ocurre una
+            unica vez por tipo, no en cada peticion.
+            </para>
+            </remarks>
+        </member>
+        <member name="M:PokemonApi.Infrastructure.Messaging.Mediator.#ctor(System.IServiceProvider)">
+            <summary>
+            Implementacion de <see cref="T:PokemonApi.Application.Abstractions.Messaging.ISender"/> que localiza el handler de cada
+            peticion en el contenedor de inyeccion de dependencias y lo ejecuta a traves
+            de la cadena de comportamientos transversales.
+            </summary>
+            <remarks>
+            <para>
+            Es un mediator propio, deliberadamente minimo, en lugar de una libreria
+            externa. La API solo necesita resolver un unico handler por tipo de peticion
+            y ejecutar una lista de comportamientos: implementar esas dos ideas en unas
+            pocas decenas de lineas evita sumar una dependencia externa y deja el flujo de
+            ejecucion completamente visible para quien lea el repositorio.
+            </para>
+            <para>
+            Los ejecutores se cachean por tipo de peticion en un diccionario concurrente,
+            de modo que la reflexion necesaria para cerrar los tipos genericos ocurre una
+            unica vez por tipo, no en cada peticion.
+            </para>
+            </remarks>
+        </member>
+        <member name="M:PokemonApi.Infrastructure.Messaging.Mediator.SendAsync``1(PokemonApi.Application.Abstractions.Messaging.IRequest{``0},System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:PokemonApi.Infrastructure.Messaging.Mediator.RequestExecutor`2">
+            <summary>
+            Ejecutor cerrado sobre una combinacion concreta de peticion y respuesta.
+            </summary>
+            <typeparam name="TRequest">Tipo de la peticion.</typeparam>
+            <typeparam name="TResponse">Tipo de la respuesta.</typeparam>
+        </member>
+        <member name="T:PokemonApi.Infrastructure.Messaging.ValidationBehavior`2">
+            <summary>
+            Ejecuta los <see cref="T:PokemonApi.Application.Common.Validation.IValidator`1"/> registrados para la peticion
+            antes de invocar al handler.
+            </summary>
+            <remarks>
+            <para>
+            La validacion vive en la capa de aplicacion, pero se ejecuta aqui, en la
+            cadena, para que ningun endpoint pueda saltarsela: basta con enviar la
+            peticion a traves de <see cref="T:PokemonApi.Application.Abstractions.Messaging.ISender"/>.
+            </para>
+            <para>
+            Un comportamiento abierto no puede resolver
+            <c>IEnumerable&lt;IValidator&lt;TRequest&gt;&gt;</c> de forma estatica, asi que
+            se le inyecta el contenedor y se resuelve el servicio ya cerrado. La
+            alternativa habitual, un comportamiento cerrado escrito a mano por peticion,
+            se repite tantas veces como casos de uso.
+            </para>
+            <para>
+            Las reglas se ejecutan en dos fases porque no todas dependen solo de la
+            peticion: las invariantes se comprueban con los validadores sincronos y los
+            valores de catalogo con los que consultan los repositorios. Ambas fases se
+            ejecutan siempre, aunque la primera ya haya fallado, para que el cliente
+            reciba en un unico 400 el informe completo en lugar de descubrir los
+            problemas de uno en uno.
+            </para>
+            </remarks>
+            <typeparam name="TRequest">Tipo de la peticion validada.</typeparam>
+            <typeparam name="TResponse">Tipo de la respuesta.</typeparam>
+            <param name="serviceProvider">Contenedor de inyeccion de dependencias.</param>
+        </member>
+        <member name="M:PokemonApi.Infrastructure.Messaging.ValidationBehavior`2.#ctor(System.IServiceProvider)">
+            <summary>
+            Ejecuta los <see cref="T:PokemonApi.Application.Common.Validation.IValidator`1"/> registrados para la peticion
+            antes de invocar al handler.
+            </summary>
+            <remarks>
+            <para>
+            La validacion vive en la capa de aplicacion, pero se ejecuta aqui, en la
+            cadena, para que ningun endpoint pueda saltarsela: basta con enviar la
+            peticion a traves de <see cref="T:PokemonApi.Application.Abstractions.Messaging.ISender"/>.
+            </para>
+            <para>
+            Un comportamiento abierto no puede resolver
+            <c>IEnumerable&lt;IValidator&lt;TRequest&gt;&gt;</c> de forma estatica, asi que
+            se le inyecta el contenedor y se resuelve el servicio ya cerrado. La
+            alternativa habitual, un comportamiento cerrado escrito a mano por peticion,
+            se repite tantas veces como casos de uso.
+            </para>
+            <para>
+            Las reglas se ejecutan en dos fases porque no todas dependen solo de la
+            peticion: las invariantes se comprueban con los validadores sincronos y los
+            valores de catalogo con los que consultan los repositorios. Ambas fases se
+            ejecutan siempre, aunque la primera ya haya fallado, para que el cliente
+            reciba en un unico 400 el informe completo en lugar de descubrir los
+            problemas de uno en uno.
+            </para>
+            </remarks>
+            <typeparam name="TRequest">Tipo de la peticion validada.</typeparam>
+            <typeparam name="TResponse">Tipo de la respuesta.</typeparam>
+            <param name="serviceProvider">Contenedor de inyeccion de dependencias.</param>
+        </member>
+        <member name="M:PokemonApi.Infrastructure.Messaging.ValidationBehavior`2.HandleAsync(`0,PokemonApi.Application.Abstractions.Messaging.RequestHandlerDelegate{`1},System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:PokemonApi.Infrastructure.Persistence.InMemoryCatalogRepository">
+            <summary>
+            Implementacion de <see cref="T:PokemonApi.Application.Abstractions.Repositories.ICatalogRepository"/> sobre la instantanea en
+            memoria.
+            </summary>
+            <remarks>
+            Los catalogos son inmutables durante toda la vida del proceso, asi que las
+            listas se devuelven tal cual, sin copia: un endpoint de catalogo no debe
+            pagar una asignacion por peticion para repetir exactamente los mismos datos.
+            La inmutabilidad del dominio es lo que hace que compartir las referencias sea
+            seguro.
+            </remarks>
+            <param name="dataSet">Instantanea del catalogo.</param>
+        </member>
+        <member name="M:PokemonApi.Infrastructure.Persistence.InMemoryCatalogRepository.#ctor(PokemonApi.Infrastructure.Data.PokemonDataSet)">
+            <summary>
+            Implementacion de <see cref="T:PokemonApi.Application.Abstractions.Repositories.ICatalogRepository"/> sobre la instantanea en
+            memoria.
+            </summary>
+            <remarks>
+            Los catalogos son inmutables durante toda la vida del proceso, asi que las
+            listas se devuelven tal cual, sin copia: un endpoint de catalogo no debe
+            pagar una asignacion por peticion para repetir exactamente los mismos datos.
+            La inmutabilidad del dominio es lo que hace que compartir las referencias sea
+            seguro.
+            </remarks>
+            <param name="dataSet">Instantanea del catalogo.</param>
+        </member>
+        <member name="M:PokemonApi.Infrastructure.Persistence.InMemoryCatalogRepository.GetGenerationsAsync(System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:PokemonApi.Infrastructure.Persistence.InMemoryCatalogRepository.GetTypesAsync(System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:PokemonApi.Infrastructure.Persistence.InMemoryCatalogRepository.GetAbilitiesAsync(System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:PokemonApi.Infrastructure.Persistence.InMemoryCatalogRepository.GetEggGroupsAsync(System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:PokemonApi.Infrastructure.Persistence.InMemoryCatalogRepository.GetHabitatsAsync(System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:PokemonApi.Infrastructure.Persistence.InMemoryCatalogRepository.GetRegionsAsync(System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:PokemonApi.Infrastructure.Persistence.InMemoryPokemonRepository">
+            <summary>
+            Implementacion de <see cref="T:PokemonApi.Application.Abstractions.Repositories.IPokemonRepository"/> sobre la instantanea en
+            memoria.
+            </summary>
+            <remarks>
+            <para>
+            No mantiene estado: todo lo que necesita ya esta materializado en
+            <see cref="T:PokemonApi.Infrastructure.Data.PokemonDataSet"/>. Se registra como singleton, igual que la
+            instantanea, porque no hay nada por-request que construir.
+            </para>
+            <para>
+            Los metodos son <c>async</c> sin <c>await</c> porque la interfaz se define
+            asi para no atar los casos de uso a esta decision: si manana el catalogo pasa
+            a vivir en Postgres, los handlers no cambian una sola linea. No es una
+            optimizacion prematura sino una decision de frontera, y el coste es
+            despreciable porque la tarea ya esta completada al devolverse.
+            </para>
+            </remarks>
+        </member>
+        <member name="M:PokemonApi.Infrastructure.Persistence.InMemoryPokemonRepository.#ctor(PokemonApi.Infrastructure.Data.PokemonDataSet)">
+            <summary>
+            Implementacion de <see cref="T:PokemonApi.Application.Abstractions.Repositories.IPokemonRepository"/> sobre la instantanea en
+            memoria.
+            </summary>
+            <remarks>
+            <para>
+            No mantiene estado: todo lo que necesita ya esta materializado en
+            <see cref="T:PokemonApi.Infrastructure.Data.PokemonDataSet"/>. Se registra como singleton, igual que la
+            instantanea, porque no hay nada por-request que construir.
+            </para>
+            <para>
+            Los metodos son <c>async</c> sin <c>await</c> porque la interfaz se define
+            asi para no atar los casos de uso a esta decision: si manana el catalogo pasa
+            a vivir en Postgres, los handlers no cambian una sola linea. No es una
+            optimizacion prematura sino una decision de frontera, y el coste es
+            despreciable porque la tarea ya esta completada al devolverse.
+            </para>
+            </remarks>
+        </member>
+        <member name="M:PokemonApi.Infrastructure.Persistence.InMemoryPokemonRepository.GetByIdAsync(System.Int32,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:PokemonApi.Infrastructure.Persistence.InMemoryPokemonRepository.GetByNameAsync(System.String,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:PokemonApi.Infrastructure.Persistence.InMemoryPokemonRepository.GetEvolutionChainAsync(System.Int32,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:PokemonApi.Infrastructure.Persistence.InMemoryPokemonRepository.SearchAsync(PokemonApi.Application.Common.Queries.PokemonSearchQuery,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:PokemonApi.Infrastructure.Persistence.InMemoryPokemonRepository.Sort(System.Collections.Generic.IEnumerable{PokemonApi.Domain.Entities.Pokemon},PokemonApi.Application.Common.Queries.PokemonSortBy)">
+            <summary>
+            Ordena la secuencia con el criterio pedido, appendiendo siempre el
+            identificador como desempate.
+            </summary>
+            <remarks>
+            El desempate no es decorativo: sin el, dos Pokemon con la misma
+            estadistica pueden cambiar de posicion entre peticiones y la paginacion
+            devolveria elementos repetidos o los saltaria. Con el, el orden es total y
+            por tanto reproducible.
+            </remarks>
+        </member>
+        <member name="M:PokemonApi.Infrastructure.Persistence.InMemoryPokemonRepository.SortKey(PokemonApi.Domain.Entities.Pokemon)">
+            <summary>
+            Valor de ordenacion de la experiencia base. Los Pokemon sin experiencia
+            conocida se colocan por debajo de cualquier valor real en lugar de
+            tratarse como cero, para que no se mezclen con los que tienen una
+            experiencia baja de verdad.
+            </summary>
+        </member>
+        <member name="M:PokemonApi.Infrastructure.Persistence.InMemoryPokemonRepository.LookupSet(System.Collections.Generic.IReadOnlyList{System.String})">
+            <summary>
+            Prepara un conjunto de valores para busquedas de complejidad constante, o
+            <see langword="null"/> si el filtro no restringe.
+            </summary>
+            <remarks>
+            Devolver <see langword="null"/> en lugar de un conjunto vacio permite
+            distinguir "no se filtro por este campo" de "se filtro y no coincidio
+            nada", que en este modelo se combinan con AND.
+            </remarks>
+        </member>
+    </members>
+</doc>

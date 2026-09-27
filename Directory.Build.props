@@ -1,0 +1,41 @@
+<Project>
+
+  <!--
+    Configuracion compartida por todos los proyectos de la solucion.
+    Objetivo: codigo de calidad de produccion (nullable habilitado, warnings
+    como errores y el ultimo nivel de analizadores recomendados por Roslyn).
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <WarningsNotAsErrors></WarningsNotAsErrors>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisMode>Recommended</AnalysisMode>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Documentacion">
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!--
+      La documentacion XML solo es obligatoria en las capas publicas de la
+      aplicacion; en los proyectos de prueba y en los internos del dominio
+      se documenta lo que aporta informacion, no cada miembro mecanicamente.
+    -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Paquetes">
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+  </PropertyGroup>
+
+</Project>

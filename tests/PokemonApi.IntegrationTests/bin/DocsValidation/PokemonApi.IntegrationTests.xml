@@ -1,0 +1,125 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>PokemonApi.IntegrationTests</name>
+    </assembly>
+    <members>
+        <member name="T:PokemonApi.IntegrationTests.CatalogEndpointTests">
+            <summary>
+            Pruebas de los catalogos auxiliares y de los errores de validacion.
+            </summary>
+        </member>
+        <member name="M:PokemonApi.IntegrationTests.CatalogEndpointTests.#ctor(PokemonApi.IntegrationTests.PokemonApiFactory)">
+            <summary>
+            Pruebas de los catalogos auxiliares y de los errores de validacion.
+            </summary>
+        </member>
+        <member name="T:PokemonApi.IntegrationTests.DocumentationTests">
+            <summary>
+            Pruebas de la web de documentacion, sus recursos incrustados y sus
+            tipos MIME.
+            </summary>
+            <remarks>
+            La pagina se sirve desde el ensamblado y sin CDN, asi que el riesgo real no
+            es que devuelva un 404 sino que lo devuelva con un tipo MIME que el
+            navegador rechaza. Un <c>text/plain</c> en un <c>&lt;script&gt;</c> no se
+            ejecuta, y la pagina pareceria rota sin que nada falle en el servidor.
+            </remarks>
+        </member>
+        <member name="M:PokemonApi.IntegrationTests.DocumentationTests.#ctor(PokemonApi.IntegrationTests.PokemonApiFactory)">
+            <summary>
+            Pruebas de la web de documentacion, sus recursos incrustados y sus
+            tipos MIME.
+            </summary>
+            <remarks>
+            La pagina se sirve desde el ensamblado y sin CDN, asi que el riesgo real no
+            es que devuelva un 404 sino que lo devuelva con un tipo MIME que el
+            navegador rechaza. Un <c>text/plain</c> en un <c>&lt;script&gt;</c> no se
+            ejecuta, y la pagina pareceria rota sin que nada falle en el servidor.
+            </remarks>
+        </member>
+        <member name="T:PokemonApi.IntegrationTests.ListPokemonEndpointTests">
+            <summary>
+            Pruebas de los endpoints de listado contra el catalogo real.
+            </summary>
+        </member>
+        <member name="M:PokemonApi.IntegrationTests.ListPokemonEndpointTests.#ctor(PokemonApi.IntegrationTests.PokemonApiFactory)">
+            <summary>
+            Pruebas de los endpoints de listado contra el catalogo real.
+            </summary>
+        </member>
+        <member name="T:PokemonApi.IntegrationTests.OpenApiTests">
+            <summary>
+            Pruebas del documento de OpenAPI, que es parte del contrato público: si el
+            esquema no coincide con lo que la API acepta, el cliente se integra mal.
+            </summary>
+        </member>
+        <member name="M:PokemonApi.IntegrationTests.OpenApiTests.#ctor(PokemonApi.IntegrationTests.PokemonApiFactory)">
+            <summary>
+            Pruebas del documento de OpenAPI, que es parte del contrato público: si el
+            esquema no coincide con lo que la API acepta, el cliente se integra mal.
+            </summary>
+        </member>
+        <member name="F:PokemonApi.IntegrationTests.OpenApiTests.NumberedSchema">
+            <summary>
+            Sufijo numerico que el generador añade al desempatar dos esquemas con el
+            mismo nombre: <c>AbilityResponse</c> y <c>AbilityResponse2</c>.
+            </summary>
+        </member>
+        <member name="T:PokemonApi.IntegrationTests.PokemonApiFactory">
+            <summary>
+            Arranca la API completa en memoria contra el dataset real.
+            </summary>
+            <remarks>
+            Se usa el dataset de verdad, no un doble, porque lo que interesa verificar en
+            las pruebas de integracion es precisamente que el JSON incrustado se carga y
+            se traduce sin errores: un doble aqui no detectaria un cambio en el mapeo del
+            dataset ni en las unidades.
+            <para>
+            El entorno es Development paraReproducir la configuracion de trabajo y tener
+            acceso al documento de OpenAPI, que solo se publica en ese entorno.
+            </para>
+            </remarks>
+        </member>
+        <member name="M:PokemonApi.IntegrationTests.PokemonApiFactory.ConfigureWebHost(Microsoft.AspNetCore.Hosting.IWebHostBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:PokemonApi.IntegrationTests.ApiCollection">
+            <summary>
+            Grupo de pruebas que comparten una unica instancia de la API.
+            </summary>
+            <remarks>
+            Compartir la instancia evita materializar el dataset una vez por prueba. Se
+            declara como coleccion porque xUnit ejecuta en paralelo las clases de una
+            misma coleccion solo si no comparten ella, y arrancar la API en paralelo
+            multiplicaria el coste sin aportar cobertura.
+            </remarks>
+        </member>
+        <member name="F:PokemonApi.IntegrationTests.ApiCollection.Name">
+            <summary>Nombre de la coleccion.</summary>
+        </member>
+        <member name="T:PokemonApi.IntegrationTests.PokemonDetailEndpointTests">
+            <summary>
+            Pruebas de los endpoints de detalle, busqueda por nombre y cadena evolutiva.
+            </summary>
+        </member>
+        <member name="M:PokemonApi.IntegrationTests.PokemonDetailEndpointTests.#ctor(PokemonApi.IntegrationTests.PokemonApiFactory)">
+            <summary>
+            Pruebas de los endpoints de detalle, busqueda por nombre y cadena evolutiva.
+            </summary>
+        </member>
+        <member name="T:PokemonApi.IntegrationTests.RateLimitingTests">
+            <summary>
+            Pruebas del limitador de peticiones.
+            </summary>
+            <remarks>
+            Esta clase usa su propia fabrica y no la coleccion compartida: el limitador
+            guarda el cupo por IP y, sharing la instancia, las peticiones de esta prueba
+            consumirian el cupo de las demas y las haria fallar de forma intermitente.
+            </remarks>
+        </member>
+        <member name="M:PokemonApi.IntegrationTests.RateLimitingTests.Dispose">
+            <inheritdoc />
+        </member>
+    </members>
+</doc>

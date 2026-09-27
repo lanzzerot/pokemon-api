@@ -1,0 +1,25 @@
+<Project>
+
+  <!--
+    Ajustes de analisis para los proyectos de prueba.
+
+    El codigo de produccion mantiene las reglas completas (ver el
+    Directory.Build.props de la raiz), pero en las pruebas hay dos convenciones
+    que chocan con ellas:
+
+      * CA1707: los nombres de prueba de xUnit se describen con guiones bajos
+        ("Create_rejects_null_values"), que es la convencion de facto de xUnit,
+        netstandard y NUnit.
+      * CA1034/CA1052: los ayudantes compartidos de prueba son publicos para
+        poder usarlos entre clases, pero no forman parte de ninguna jerarquia.
+
+    Se relaja solo lo que estorba a la lectura de las pruebas; el resto de los
+    analizadores sigue actuan como en produccion.
+  -->
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);CA1707;CA1034;CA1052</NoWarn>
+  </PropertyGroup>
+
+</Project>

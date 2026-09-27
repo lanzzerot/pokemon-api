@@ -1,0 +1,6 @@
+{
+  "PokemonApi.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "C:\\Users\\ramge\\OneDrive\\Documents\\Proyectos\\pokemon-api\\src\\PokemonApi.Api",
+  "PokemonApi.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "C:\\Users\\ramge\\OneDrive\\Documents\\Proyectos\\pokemon-api\\src\\PokemonApi.Application",
+  "PokemonApi.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "C:\\Users\\ramge\\OneDrive\\Documents\\Proyectos\\pokemon-api\\src\\PokemonApi.Domain",
+  "PokemonApi.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "C:\\Users\\ramge\\OneDrive\\Documents\\Proyectos\\pokemon-api\\src\\PokemonApi.Infrastructure"
+}

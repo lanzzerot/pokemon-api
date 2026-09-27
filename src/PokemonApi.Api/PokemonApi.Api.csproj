@@ -1,0 +1,46 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <!--
+    Capa de presentacion: composicion de dependencias, middleware y endpoints.
+    Es la unica capa que conoce HTTP.
+  -->
+
+  <PropertyGroup>
+    <RootNamespace>PokemonApi.Api</RootNamespace>
+    <AssemblyName>PokemonApi.Api</AssemblyName>
+    <UserSecretsId>pokemonapi-api-8f2c1d64</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PokemonApi.Infrastructure\PokemonApi.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="PokemonApi.IntegrationTests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+      El contenido web, ademas del ensamblado compilado, forma parte del
+      artefacto published para que la API sea desplegable como un unico paquete.
+    -->
+    <Content Update="appsettings*.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+      La web de documentacion viaja incrustada en el ensamblado, igual que el
+      dataset: no hay carpeta que desplegar ni archivos que puedan quedarse
+      atras. El nombre logico es estable y es lo que busca el endpoint /docs.
+    -->
+    <EmbeddedResource Include="Docs\docs.css" LogicalName="PokemonApi.Api.Docs.docs.css" />
+    <EmbeddedResource Include="Docs\docs.js" LogicalName="PokemonApi.Api.Docs.docs.js" />
+    <EmbeddedResource Include="Docs\index.html" LogicalName="PokemonApi.Api.Docs.index.html" />
+    <EmbeddedResource Include="..\..\assets\pokemon-api-logo.svg" LogicalName="PokemonApi.Api.Docs.pokemon-api-logo.svg" />
+  </ItemGroup>
+
+</Project>

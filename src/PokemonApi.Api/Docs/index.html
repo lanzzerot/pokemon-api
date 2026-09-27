@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pokemon API · Documentación</title>
+  <meta name="description" content="Catálogo de Pokémon de las nueve generaciones: filtros, orden, paginación, errores y referencia ejecutable de la API." />
+  <link rel="stylesheet" href="docs.css" />
+  <link rel="icon" type="image/svg+xml" href="pokemon-api-logo.svg" />
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#inicio">
+      <img class="brand-mark" src="pokemon-api-logo.svg" alt="" />
+      Pokemon API
+      <small>v1</small>
+    </a>
+    <div class="topbar-spacer"></div>
+    <a class="topbar-link" href="#referencia">Referencia</a>
+    <a class="topbar-link" href="openapi.json">openapi.json</a>
+    <button class="icon-button" id="theme-toggle" type="button" title="Cambiar entre tema claro y oscuro" aria-label="Cambiar tema">
+      <span id="theme-icon" aria-hidden="true">◐</span>
+    </button>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="search">
+        <span aria-hidden="true">⌕</span>
+        <input id="filter" type="search" placeholder="Filtrar secciones…" aria-label="Filtrar secciones de la documentación" />
+        <kbd>/</kbd>
+      </div>
+
+      <nav id="nav" aria-label="Índice de la documentación">
+        <h2>Primeros pasos</h2>
+        <ul>
+          <li><a href="#inicio">Resumen</a></li>
+          <li><a href="#puesta-en-marcha">Puesta en marcha</a></li>
+        </ul>
+
+        <h2>Guía</h2>
+        <ul>
+          <li><a href="#filtros">Filtros</a></li>
+          <li><a href="#orden-paginacion">Orden y paginación</a></li>
+          <li><a href="#catalogo">Catálogos</a></li>
+          <li><a href="#errores">Errores</a></li>
+          <li><a href="#limites">Límites de uso</a></li>
+          <li><a href="#dataset">Dataset y licencia</a></li>
+        </ul>
+
+        <h2>Referencia</h2>
+        <ul id="endpoint-list">
+          <li><a href="#referencia">Cargando endpoints…</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <main>
+      <section id="inicio">
+        <div class="hero">
+          <div>
+            <h1>El Pokédex, como API</h1>
+            <p>
+              1&nbsp;302 Pokémon de las nueve generaciones con sus tipos, habilidades, evoluciones,
+              grupos de huevo, habitats y regiones. Sin autenticación, sin base de datos y sin
+              llamadas a terceros en tiempo de ejecución: el dataset viaja incrustado en el
+              ensamblado, así que cada respuesta es un <code>200</code> o un error de validación.
+            </p>
+            <div class="badges">
+              <span class="badge">9 generaciones</span>
+              <span class="badge">18 tipos</span>
+              <span class="badge">Solo lectura</span>
+              <span class="badge">Sin autenticación</span>
+              <span class="badge">OpenAPI 3.1</span>
+            </div>
+          </div>
+          <div class="grid">
+            <div class="stat"><b>4</b><span>endpoints de Pokémon</span></div>
+            <div class="stat"><b>6</b><span>catálogos de referencia</span></div>
+            <div class="stat"><b>22</b><span>filtros combinables</span></div>
+            <div class="stat"><b>0</b><span>dependencias de red en runtime</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="puesta-en-marcha">
+        <h2 class="section-title">Puesta en marcha</h2>
+        <p class="section-lead">
+          Todas las rutas cuelgan de <code>/api/v1</code> y responden en JSON con
+          <code>UTF-8</code>. No hay cabeceras de autenticación ni pasos previos: se puede llamar al
+          endpoint más rico directamente desde el navegador.
+        </p>
+
+        <div class="tabs" role="tablist">
+          <button class="tab" role="tab" aria-selected="true" data-example="curl">curl</button>
+          <button class="tab" role="tab" aria-selected="false" data-example="js">JavaScript</button>
+          <button class="tab" role="tab" aria-selected="false" data-example="python">Python</button>
+        </div>
+        <pre class="card" id="quickstart"><code>cargando…</code></pre>
+      </section>
+
+      <section id="filtros">
+        <h2 class="section-title">Filtros</h2>
+        <p class="section-lead">
+          <code>GET /api/v1/pokemon</code> acepta todos los filtros siguientes y todos son
+          opcionales. Se combinan con <b>AND</b> entre campos distintos y con <b>OR</b> dentro del
+          mismo campo.
+        </p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Filtro</th>
+                <th>Qué hace</th>
+                <th>Ejemplo</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>name</code></td>
+                <td>Coincidencia parcial, sin distinguir mayúsculas.</td>
+                <td><code>?name=char</code></td>
+              </tr>
+              <tr>
+                <td><code>types</code></td>
+                <td>Tipos; repetible o separado por comas.</td>
+                <td><code>?types=fire,water</code></td>
+              </tr>
+              <tr>
+                <td><code>abilities</code></td>
+                <td>Habilidades del moveset principal o de sus evoluciones.</td>
+                <td><code>?abilities=blaze</code></td>
+              </tr>
+              <tr>
+                <td><code>generation</code> · <code>generations</code></td>
+                <td>Una o varias generaciones, por número o slug.</td>
+                <td><code>?generations=3,4</code></td>
+              </tr>
+              <tr>
+                <td><code>regions</code></td>
+                <td>Regiones a las que pertenecen las generaciones del Pokémon.</td>
+                <td><code>?regions=kanto</code></td>
+              </tr>
+              <tr>
+                <td><code>eggGroups</code></td>
+                <td>Grupos de huevo, en plural porque hay varios.</td>
+                <td><code>?eggGroups=field</code></td>
+              </tr>
+              <tr>
+                <td><code>habitats</code></td>
+                <td>Hábitats naturales.</td>
+                <td><code>?habitats=cave</code></td>
+              </tr>
+              <tr>
+                <td><code>rarity</code></td>
+                <td>Rareza de la especie: <code>mythic</code>, <code>legendary</code>, <code>ultra</code>, <code>rare</code>, <code>common</code>.</td>
+                <td><code>?rarity=legendary</code></td>
+              </tr>
+              <tr>
+                <td><code>minHeight</code> · <code>maxHeight</code></td>
+                <td>Altura en <b>metros</b> (se filtra en metros, no en decímetros).</td>
+                <td><code>?minHeight=1.5</code></td>
+              </tr>
+              <tr>
+                <td><code>minWeight</code> · <code>maxWeight</code></td>
+                <td>Peso en <b>kilogramos</b>.</td>
+                <td><code>?maxWeight=10</code></td>
+              </tr>
+              <tr>
+                <td><code>minBaseExperience</code></td>
+                <td>Experiencia base mínima.</td>
+                <td><code>?minBaseExperience=200</code></td>
+              </tr>
+              <tr>
+                <td><code>minTotalStats</code> · <code>maxTotalStats</code></td>
+                <td>Suma de las seis estadísticas base.</td>
+                <td><code>?minTotalStats=500</code></td>
+              </tr>
+              <tr>
+                <td><code>minStat</code> + <code>minStatValue</code></td>
+                <td>Una estadística concreta y su valor mínimo.</td>
+                <td><code>?minStat=speed&amp;minStatValue=100</code></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="notes" style="margin-top: 16px">
+          <div class="note">
+            <b>Varios valores, dos sintaxis</b>
+            <p>
+              <code>types=fire&amp;types=water</code> y <code>types=fire,water</code> son
+              equivalentes. Se eligen AND u OR por el <em>tipo</em> de filtro, no por el nombre del
+              parámetro: <code>types=fire,water</code> es «es de tipo fuego <b>o</b> agua».
+            </p>
+          </div>
+          <div class="note">
+            <b>Sin comas implícitas</b>
+            <p>
+              <code>?minHeight=1,2</code> se interpreta como los filtros
+              <code>minHeight=1</code> y <code>maxHeight=2</code>, no como el decimal 1,2. Usa
+              punto: <code>?minHeight=1.2</code>.
+            </p>
+          </div>
+          <div class="note">
+            <b>Valores desconocidos se rechazan</b>
+            <p>
+              Un tipo, habilidad, región, habitat o grupo de huevo inexistente devuelve
+              <code>400</code> enumerando los válidos, en lugar de devolver una lista vacía que
+              parecería un error del cliente.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section id="orden-paginacion">
+        <h2 class="section-title">Orden y paginación</h2>
+        <p class="section-lead">
+          El orden por defecto es estable: <b>id ascendente</b>. Todas las páginas repiten el mismo
+          criterio, así que recorrer el catálogo con <code>page</code> no puede duplicar ni perder
+          elementos.
+        </p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Parámetro</th><th>Valores</th><th>Notas</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>sortBy</code></td>
+                <td><code>id</code>, <code>name</code>, <code>height</code>, <code>weight</code>, <code>baseExperience</code>, <code>totalStats</code></td>
+                <td>Sin distinguir mayúsculas de minúsculas.</td>
+              </tr>
+              <tr>
+                <td><code>sortDirection</code></td>
+                <td><code>asc</code>, <code>desc</code> (también <code>ascending</code> y <code>descending</code>)</td>
+                <td>Los valores en inglés se aceptan como sinónimos.</td>
+              </tr>
+              <tr>
+                <td><code>page</code></td>
+                <td>1 por defecto</td>
+                <td>Debe ser ≥ 1.</td>
+              </tr>
+              <tr>
+                <td><code>pageSize</code></td>
+                <td>20 por defecto, máximo 100</td>
+                <td>Debe estar entre 1 y 100.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <pre class="card" id="paging-example" style="margin-top: 16px"><code>cargando…</code></pre>
+      </section>
+
+      <section id="catalogo">
+        <h2 class="section-title">Catálogos</h2>
+        <p class="section-lead">
+          Seis endpoints auxiliares, todos bajo <code>/api/v1</code>. Son endpoints separados y no un
+          único <code>/metadata</code> porque cada catálogo se consume por separado: un cliente que
+          solo necesita el mapa de tipos no debería descargar 367 habilidades para obtener el resto.
+        </p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Endpoint</th><th>Devuelve</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>GET /api/v1/generations</code></td><td>Las nueve generaciones con su región y su recuento de Pokémon.</td></tr>
+              <tr><td><code>GET /api/v1/types</code></td><td>Los 18 tipos con su recuento, evoluciones incluidas.</td></tr>
+              <tr><td><code>GET /api/v1/abilities</code></td><td>Las habilidades; admite <code>name</code> e <code>isMainSeries</code>.</td></tr>
+              <tr><td><code>GET /api/v1/egg-groups</code></td><td>Los grupos de huevo.</td></tr>
+              <tr><td><code>GET /api/v1/habitats</code></td><td>Los hábitats naturales con su recuento.</td></tr>
+              <tr><td><code>GET /api/v1/regions</code></td><td>Las regiones, derivadas de las generaciones.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="note" style="margin-top: 16px">
+          <b>El filtro <code>name</code> de habilidades busca en el efecto</b>
+          <p>
+            <code>?name=flight</code> encuentra habilidades cuya descripción menciona volar, no solo
+            aquellas que se llaman «volar». Es el mismo filtro que usan los Pokémon con esa
+            habilidad.
+          </p>
+        </div>
+      </section>
+
+      <section id="errores">
+        <h2 class="section-title">Errores</h2>
+        <p class="section-lead">
+          Todos los errores usan <a href="https://datatracker.ietf.org/doc/html/rfc9457" rel="noreferrer noopener">RFC 9457</a>:
+          <code>application/problem+json</code> con un <code>type</code> URN estable, un
+          <code>code</code> legible por máquina y un <code>traceId</code> que se corresponde con la
+          línea del log del servidor.
+        </p>
+
+        <pre class="card"><code>{
+  "type": "urn:pokemon-api:error:request.validation_failed",
+  "title": "One or more validation errors occurred.",
+  "status": 400,
+  "detail": "pageSize must be between 1 and 100.",
+  "code": "request.validation_failed",
+  "traceId": "0HN7F2KQ8P1Q:00000001",
+  "errors": {
+    "pageSize": ["pageSize must be between 1 and 100."]
+  }
+}</code></pre>
+
+        <div class="table-wrap" style="margin-top: 16px">
+          <table>
+            <thead>
+              <tr><th>Estado</th><th><code>code</code></th><th>Cuándo ocurre</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>400</code></td>
+                <td><code>request.validation_failed</code></td>
+                <td>Un filtro no cumple sus reglas. <code>errors</code> trae un campo por problema.</td>
+              </tr>
+              <tr>
+                <td><code>400</code></td>
+                <td><code>request.malformed_parameter</code></td>
+                <td>Un parámetro no se puede convertir: <code>?page=abc</code>.</td>
+              </tr>
+              <tr>
+                <td><code>404</code></td>
+                <td><code>pokemon.not_found</code></td>
+                <td>El id o el nombre no existe en el catálogo.</td>
+              </tr>
+              <tr>
+                <td><code>429</code></td>
+                <td><code>rate_limit.exceeded</code></td>
+                <td>Se superó el límite de la ventana; mira <code>Retry-After</code>.</td>
+              </tr>
+              <tr>
+                <td><code>500</code></td>
+                <td><code>server.unexpected_error</code></td>
+                <td>Fallo no previsto. El <code>traceId</code> permite rastrearlo.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="note" style="margin-top: 16px">
+          <b>Errores de validación acumulables</b>
+          <p>
+            Todos los filtros se validan antes de devolver nada, así que un <code>400</code> puede
+            listar a la vez <code>pageSize</code> y <code>sortBy</code> incorrectos. No hace falta
+            corregir los errores de uno en uno.
+          </p>
+        </div>
+      </section>
+
+      <section id="limites">
+        <h2 class="section-title">Límites de uso</h2>
+        <p class="section-lead">
+          Limitación por ventana de un minuto, por IP, con partición fija (no hay cálculo de ventana
+          deslizante) y sin cola de espera: al superarla se responde <code>429</code> de inmediato.
+        </p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Política</th><th>Endpoints</th><th>Peticiones/minuto</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>default</code></td><td><code>/api/v1/pokemon…</code></td><td>120</td></tr>
+              <tr><td><code>catalog</code></td><td><code>/api/v1/abilities</code>, <code>/generations</code>, <code>/types</code>, <code>/egg-groups</code>, <code>/habitats</code>, <code>/regions</code></td><td>300</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="dataset">
+        <h2 class="section-title">Dataset y licencia</h2>
+        <p class="section-lead">
+          El dataset se genera desde <a href="https://pokeapi.co" rel="noreferrer noopener">PokeAPI</a>
+          y se importa una sola vez en tiempo de compilación, en forma de resources
+          incrustados. En runtime no hay red, ni PokeAPI, ni base de datos: solo CPU y un diccionario
+          en memoria.
+        </p>
+
+        <div class="notes">
+          <div class="note">
+            <b>Reproducir el dataset</b>
+            <p>
+              <code>tools/build-dataset.mjs</code> consulta PokeAPI y escribe
+              <code>src/PokemonApi.Infrastructure/Data/catalog.json</code>.
+              <code>tools/audit-dataset.js</code> verifica que los ids no tengan huecos y que las
+              referencias cruzadas estén resueltas.
+            </p>
+          </div>
+          <div class="note">
+            <b>Licencia de los datos</b>
+            <p>
+              Los datos de Pokémon son marca registrada de Nintendo, The Pokémon Company y
+              Game Freak. El dataset se distribuye bajo <b>BSD-3-Clause</b> courtesy de PokeAPI,
+              como un ejercicio técnico y sin ánimo de lucro.
+            </p>
+          </div>
+          <div class="note">
+            <b>Unidades y convenciones</b>
+            <p>
+              Alturas en metros y pesos en kilogramos en la API; el dataset guarda decímetros y
+              hectogramos. Los slugs son minúsculas con guiones: <code>generation-iii</code>,
+              <code>charizard-mega-x</code>.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section id="referencia">
+        <h2 class="section-title">Referencia de la API</h2>
+        <p class="section-lead">
+          Generada desde <a href="openapi.json"><code>openapi.json</code></a>, el mismo documento que
+          consumen los generadores de clientes. Cada endpoint trae sus parámetros, sus esquemas y un
+          botón <b>Probar</b> que ejecuta la petición contra esta misma instancia.
+        </p>
+        <div id="endpoints">
+          <p class="empty">Cargando la referencia desde <code>/openapi.json</code>…</p>
+        </div>
+      </section>
+
+      <footer>
+        <p>
+          Documentación generada desde el propio ensamblado, sin CDN. Los datos provienen de
+          <a href="https://pokeapi.co" rel="noreferrer noopener">PokeAPI</a> bajo BSD-3-Clause.
+        </p>
+      </footer>
+    </main>
+  </div>
+
+  <script src="docs.js"></script>
+</body>
+</html>
